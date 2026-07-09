@@ -9,7 +9,7 @@
 // إعدادات الاتصال
 // ==========================================
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxu3681g6XIABu4XuEq12M82foCldx8PNp4zygmy2k_Vo84UfuBRtt6zCUCFLoRn4v_wg/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbx51syLRrRu0JrDhhgaySviP0hOp0yOhe-ymywoVb_nF2O2Gt2B-2AclzzL6fjRUzTu/exec';
 
 // ==========================================
 // الدالة الأساسية للاتصال بالـ API
