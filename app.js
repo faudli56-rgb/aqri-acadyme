@@ -190,12 +190,49 @@ async function loadCoursesFromServer() {
 function renderCourses(courses) {
     var fullContainer = document.getElementById('courses-list-container');
     var homeFeaturedContainer = document.getElementById('home-featured-courses');
-    var adminCoursesList = document.getElementById('admin-courses-list'); 
-    
+    var adminCoursesList = document.getElementById('admin-courses-list');
+
     if(fullContainer) fullContainer.innerHTML = ''; 
     if(homeFeaturedContainer) homeFeaturedContainer.innerHTML = ''; 
-    if(adminCoursesList) adminCoursesList.innerHTML = ''; 
-    
+    if(adminCoursesList) adminCoursesList.innerHTML = '';
+
+    // 1️⃣ فلترة وترتيب الدورات المخصصة للرئيسية (التي تحمل أرقام 1, 2, 3)
+    var featuredCourses = courses.filter(function(c) {
+        return c.featuredOrder === 1 || c.featuredOrder === 2 || c.featuredOrder === 3;
+    }).sort(function(a, b) {
+        return a.featuredOrder - b.featuredOrder;
+    });
+
+    // في حال لم تقم بتحديد أرقام في الشيت، نعرض أول 3 دورات تلقائياً كإجراء احتياطي
+    if (featuredCourses.length === 0) {
+        featuredCourses = courses.slice(0, 3);
+    }
+
+    // 2️⃣ طباعة الدورات المميزة في الصفحة الرئيسية
+    featuredCourses.forEach(function(c) {
+        var cardMarkup = `
+        <div class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden flex flex-col justify-between text-right transition hover:shadow-xl" data-category="${c.category}">
+           <img class="h-44 w-full object-cover" src="${getValidImageUrl(c.image)}" loading="lazy">
+            <div class="p-5 flex-1 flex flex-col justify-between">
+                <div class="mb-4">
+                    <span class="bg-slate-100 text-[#0B1F4D] text-[10px] font-bold px-2.5 py-1 rounded-md border border-slate-200">${c.category}</span>
+                    <h3 class="font-bold text-md text-[#0B1F4D] mt-3">${c.title}</h3>
+                    <p class="text-xs text-slate-500 mt-1.5"><i class="fas fa-chalkboard-teacher ml-1.5 text-[#D4A017]"></i> المدرب: ${c.trainer}</p>
+                    <p class="text-xs text-slate-400 mt-0.5"><i class="fas fa-clock ml-1.5 text-slate-400"></i> المدة: ${c.duration || '36 ساعة تدريبية'}</p>
+                </div>
+                <div class="flex justify-between items-center pt-4 border-t border-slate-50">
+                    <span class="text-amber-600 font-extrabold text-sm">${c.fee}</span>
+                    <div class="flex gap-2">
+                        <button onclick="openLandingPage('${c.title}')" class="bg-slate-100 hover:bg-slate-200 text-[#0B1F4D] text-xs font-bold px-3 py-2 rounded-xl border border-slate-200 transition cursor-pointer">التفاصيل</button>
+                        <button onclick="selectCourseDirectly('${c.title}')" class="bg-[#0B1F4D] hover:bg-[#132F6B] text-white text-xs font-bold px-3 py-2 rounded-xl shadow-md transition cursor-pointer">سجل الآن</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        if(homeFeaturedContainer) homeFeaturedContainer.insertAdjacentHTML('beforeend', cardMarkup);
+    });
+
+    // 3️⃣ طباعة كل الدورات في صفحة (الدورات التدريبية المكتملة) ولوحة التحكم
     courses.forEach(function(c, index) {
         var cardMarkup = `
         <div class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden flex flex-col justify-between text-right transition hover:shadow-xl" data-category="${c.category}">
@@ -218,7 +255,6 @@ function renderCourses(courses) {
         </div>`;
         
         if(fullContainer) fullContainer.insertAdjacentHTML('beforeend', cardMarkup);
-        if(homeFeaturedContainer && index < 3) homeFeaturedContainer.insertAdjacentHTML('beforeend', cardMarkup);
 
         if(adminCoursesList) {
             adminCoursesList.insertAdjacentHTML('beforeend', `
@@ -233,7 +269,6 @@ function renderCourses(courses) {
         }
     });
 }
-
 function filterCourses(category) {
     document.querySelectorAll('#courses-list-container > div').forEach(function(card) {
         card.style.display = (category === 'all' || card.getAttribute('data-category') === category) ? 'flex' : 'none';
