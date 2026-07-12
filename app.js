@@ -959,42 +959,57 @@ function openEditCourseModal(id, title, trainer, dur, fee, cat) {
     document.getElementById('edit-dur').value = dur;
     document.getElementById('edit-fee').value = fee;
     document.getElementById('edit-cat').value = cat;
+    document.getElementById('edit-img').value = ''; // تصفير حقل الصورة عند فتح النافذة
     document.getElementById('edit-course-modal').classList.remove('hidden');
 }
 
 async function submitCourseEdit() {
     var id = document.getElementById('edit-course-id').value;
-    var data = {
-        title: document.getElementById('edit-title').value,
-        trainer: document.getElementById('edit-trainer').value,
-        duration: document.getElementById('edit-dur').value,
-        fee: document.getElementById('edit-fee').value,
-        category: document.getElementById('edit-cat').value
-    };
-    
     var btn = document.querySelector('#edit-course-modal button'); 
     var originalText = btn.innerText;
-    btn.innerText = "جاري التحديث..."; 
+    btn.innerText = "جاري التحديث والرفع..."; 
     btn.disabled = true;
 
-    try {
-        const res = await updateCourseFromAdmin(id, data);
-        btn.innerText = originalText; 
-        btn.disabled = false;
-        if(res.success) {
-            alert("✅ " + res.message);
-            document.getElementById('edit-course-modal').classList.add('hidden');
-            loadCoursesFromServer(); 
-        } else { 
-            alert("❌ خطأ: " + res.error); 
+    var fileInput = document.getElementById('edit-img');
+
+    // دالة الإرسال للسيرفر
+    var sendData = async function(base64Img) {
+        var data = {
+            title: document.getElementById('edit-title').value,
+            trainer: document.getElementById('edit-trainer').value,
+            duration: document.getElementById('edit-dur').value,
+            fee: document.getElementById('edit-fee').value,
+            category: document.getElementById('edit-cat').value,
+            image: base64Img // إرفاق الصورة إن وجدت
+        };
+        
+        try {
+            const res = await updateCourseFromAdmin(id, data);
+            btn.innerText = originalText; 
+            btn.disabled = false;
+            if(res.success) {
+                alert("✅ " + res.message);
+                document.getElementById('edit-course-modal').classList.add('hidden');
+                loadCoursesFromServer(); 
+            } else { 
+                alert("❌ خطأ: " + res.error); 
+            }
+        } catch(err) {
+            alert("خطأ سيرفر: " + err);
+            btn.innerText = originalText; 
+            btn.disabled = false;
         }
-    } catch(err) {
-        alert("خطأ سيرفر: " + err);
-        btn.innerText = originalText; 
-        btn.disabled = false;
+    };
+
+    // التحقق مما إذا كان هناك صورة جديدة مرفقة
+    if (fileInput.files.length > 0) {
+        var reader = new FileReader();
+        reader.onload = function(ev) { sendData(ev.target.result); };
+        reader.readAsDataURL(fileInput.files[0]);
+    } else { 
+        sendData(""); // إرسال النص بدون صورة جديدة
     }
 }
-
 // ==========================================
 // دوال آراء العملاء
 // ==========================================
