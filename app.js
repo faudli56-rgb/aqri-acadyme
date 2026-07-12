@@ -84,6 +84,11 @@ function toggleMobileMenu() {
 
 function closePopup() { 
     document.getElementById('welcome-popup').classList.add('hidden'); 
+    
+    // استدعاء بدء جولة التعليمات للزوار الجدد بعد إغلاق الترحيب تلقائياً
+    if (typeof checkAndStartOnboarding === 'function') {
+        checkAndStartOnboarding();
+    }
 }
 
 function popupActionRegister() { 
@@ -1927,4 +1932,141 @@ function safeSetStorage(key, value) {
 function safeGetStorage(key) {
     try { return localStorage.getItem(key); } 
     catch(e) { return null; }
+}
+// ==========================================
+// نظام الجولة التفاعلية للمستخدمين الجدد
+// ==========================================
+
+var onboardingSteps = [
+    {
+        elementId: 'btn-courses',
+        title: 'دليل البرامج التدريبية',
+        content: 'من هنا يمكنك تصفح واستكشاف جميع المسارات والدورات التدريبية المتاحة في الأكاديمية، وفلترتها حسب التخصص.'
+    },
+    {
+        elementId: 'btn-b2b',
+        title: 'خدمات الشركات والمنظمات',
+        content: 'إذا كنت تمثل جهة، منظمة دولية، أو مبادرة مجتمعية، يمكنك من هنا تقديم طلب شراكة أو الاطلاع على عروضنا الاستراتيجية.'
+    },
+    {
+        elementId: 'btn-verification',
+        title: 'بوابة فحص الشهادات',
+        content: 'هذا القسم مخصص للتحقق الفوري من صحة واعتماد الشهادات الموحدة الصادرة رسمياً من الأكاديمية عن طريق رقم القيد.'
+    },
+    {
+        elementId: 'btn-payment',
+        title: 'تسديد الرسوم',
+        content: 'بوابة الدفع المعتمدة لإرسال إشعارات الحوالات ورفع صور السندات لاعتمادها تلقائياً في لوحة الإدارة.'
+    }
+];
+
+var currentTourStep = 0;
+
+function checkAndStartOnboarding() {
+    // التحقق مما إذا كان المستخدم قد أتم الجولة سابقاً
+    if (localStorage.getItem('onboarding_completed') === 'true') {
+        return; // زائر قديم، لا تظهر الجولة
+    }
+    
+    // بدء الجولة بعد إغلاق نافذة الترحيب المعتادة بـ 1.5 ثانية
+    setTimeout(startOnboardingTour, 1500);
+}
+
+function startOnboardingTour() {
+    currentTourStep = 0;
+    
+    // 1. إنشاء خلفية التعتيم
+    var backdrop = document.createElement('div');
+    backdrop.id = 'tour-backdrop';
+    backdrop.className = 'fixed inset-0 bg-black/75 backdrop-blur-[2px] z-[60] transition-all duration-300 opacity-0';
+    document.body.appendChild(backdrop);
+    
+    // 2. إنشاء صندوق التعليمات العائم
+    var guideBox = document.createElement('div');
+    guideBox.id = 'tour-guide-box';
+    guideBox.className = 'fixed z-[75] bg-white rounded-2xl shadow-2xl p-6 w-[320px] text-right text-xs border border-slate-100 transition-all duration-300 opacity-0 transform translate-y-4';
+    document.body.appendChild(guideBox);
+    
+    // إظهار العناصر بسلاسة
+    setTimeout(function() {
+        backdrop.classList.remove('opacity-0');
+        showTourStep();
+    }, 50);
+}
+
+function showTourStep() {
+    if (currentTourStep >= onboardingSteps.length) {
+        endOnboardingTour();
+        return;
+    }
+    
+    var step = onboardingSteps[currentTourStep];
+    var element = document.getElementById(step.elementId);
+    var guideBox = document.getElementById('tour-guide-box');
+    
+    // إزالة تسليط الضوء عن العناصر السابقة
+    document.querySelectorAll('.tour-highlight').forEach(el => {
+        el.classList.remove('tour-highlight', 'relative', 'z-[70]', 'ring-4', 'ring-[#D4A017]', 'bg-[#0B1F4D]', 'rounded-lg');
+    });
+    
+    if (element) {
+        // تسليط الضوء على العنصر المستهدف باستخدام كلاسات Tailwind
+        element.classList.add('tour-highlight', 'relative', 'z-[70]', 'ring-4', 'ring-[#D4A017]', 'bg-[#0B1F4D]', 'rounded-lg', 'p-1');
+        
+        // حساب موقع العنصر لنقل صندوق التعليمات بجانبه أو أسفله
+        var rect = element.getBoundingClientRect();
+        guideBox.style.top = (rect.bottom + window.scrollY + 12) + 'px';
+        guideBox.style.left = Math.max(10, (rect.left + (rect.width / 2) - 160)) + 'px';
+        
+        // التمرير الذكي للعنصر ليكون واضحاً للمستخدم
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        // إذا لم يكن العنصر موجوداً (مثلاً في الجوال)، يتم توسيط الصندوق في الشاشة
+        guideBox.style.top = '40%';
+        guideBox.style.left = '50%';
+        guideBox.style.transform = 'translate(-50%, -50%)';
+    }
+    
+    // تحديث محتوى صندوق التعليمات
+    guideBox.innerHTML = `
+        <div class="flex justify-between items-center border-b pb-2 mb-3">
+            <h4 class="font-black text-[#0B1F4D] text-sm"><i class="fas fa-magic text-[#D4A017] ml-1"></i> ${step.title}</h4>
+            <span class="text-[10px] text-slate-400 font-bold">${currentTourStep + 1} من ${onboardingSteps.length}</span>
+        </div>
+        <p class="text-slate-600 leading-relaxed font-bold mb-4">${step.content}</p>
+        <div class="flex gap-2 border-t pt-3">
+            <button onclick="nextTourStep()" class="flex-1 bg-[#0B1F4D] text-white py-2 rounded-xl font-bold hover:bg-[#132F6B] transition shadow-sm">
+                ${currentTourStep === onboardingSteps.length - 1 ? 'إنهاء الجولة' : 'التالي ➔'}
+            </button>
+            <button onclick="endOnboardingTour()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 px-3 py-2 rounded-xl font-bold border">
+                تخطي
+            </button>
+        </div>
+    `;
+    
+    guideBox.classList.remove('opacity-0', 'translate-y-4');
+}
+
+function nextTourStep() {
+    currentTourStep++;
+    showTourStep();
+}
+
+function endOnboardingTour() {
+    // إزالة عناصر الجولة من الـ DOM
+    var backdrop = document.getElementById('tour-backdrop');
+    var guideBox = document.getElementById('tour-guide-box');
+    
+    if (backdrop) backdrop.remove();
+    if (guideBox) guideBox.remove();
+    
+    // إزالة كلاسات تسليط الضوء عن كل العناصر
+    document.querySelectorAll('.tour-highlight').forEach(el => {
+        el.classList.remove('tour-highlight', 'relative', 'z-[70]', 'ring-4', 'ring-[#D4A017]', 'bg-[#0B1F4D]', 'rounded-lg', 'p-1');
+    });
+    
+    // حفظ في الـ localStorage حتى لا تظهر الجولة مجدداً لهذا المتصفح
+    localStorage.setItem('onboarding_completed', 'true');
+    
+    showToast('تمت الجولة التعليمية بنجاح! نتمنى لك تجربة ممتعة.');
 }
