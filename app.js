@@ -14,13 +14,40 @@ var globalAds = [];
 var currentAdIndex = 0;
 var totalViews = 1482;
 var totalClicks = 342;
-
+function showToast(message, isError = false) {
+    const toast = document.createElement('div');
+    // استخدام ألوان Tailwind المدعومة في مشروعك
+    toast.className = `fixed bottom-6 right-6 text-white px-6 py-3 rounded-xl shadow-2xl z-[100] transition-opacity duration-300 font-bold text-sm ${isError ? 'bg-rose-600' : 'bg-emerald-600'}`;
+    toast.innerHTML = isError ? `<i class="fas fa-exclamation-circle ml-2"></i> ${message}` : `<i class="fas fa-check-circle ml-2"></i> ${message}`;
+    
+    document.body.appendChild(toast);
+    
+    // إخفاء الإشعار بسلاسة بعد 3.5 ثوانٍ
+    setTimeout(() => { 
+        toast.style.opacity = '0'; 
+        setTimeout(() => toast.remove(), 300); 
+    }, 3500);
+}
 // محاولة استرجاع البيانات من التخزين المحلي
 try {
     if (localStorage.getItem('site_views')) totalViews = parseInt(localStorage.getItem('site_views'), 10);
     if (localStorage.getItem('wa_clicks')) totalClicks = parseInt(localStorage.getItem('wa_clicks'), 10);
 } catch(e) {}
 
+// دالة لتعقيم النصوص وحماية الموقع من ثغرات XSS
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.toString().replace(/[&<>'"]/g, function(tag) {
+        var charsToReplace = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        };
+        return charsToReplace[tag] || tag;
+    });
+}
 // ==========================================
 // دوال التهيئة والتنقل
 // ==========================================
@@ -216,8 +243,8 @@ function renderCourses(courses) {
             <div class="p-5 flex-1 flex flex-col justify-between">
                 <div class="mb-4">
                     <span class="bg-slate-100 text-[#0B1F4D] text-[10px] font-bold px-2.5 py-1 rounded-md border border-slate-200">${c.category}</span>
-                    <h3 class="font-bold text-md text-[#0B1F4D] mt-3">${c.title}</h3>
-                    <p class="text-xs text-slate-500 mt-1.5"><i class="fas fa-chalkboard-teacher ml-1.5 text-[#D4A017]"></i> المدرب: ${c.trainer}</p>
+                    <h3 class="font-bold text-md text-[#0B1F4D] mt-3">${escapeHTML(c.title)}</h3>
+                    <p class="text-xs text-slate-500 mt-1.5"><i class="fas fa-chalkboard-teacher ml-1.5 text-[#D4A017]"></i> المدرب: ${escapeHTML(c.trainer)}</p>
                     <p class="text-xs text-slate-400 mt-0.5"><i class="fas fa-clock ml-1.5 text-slate-400"></i> المدة: ${c.duration || '36 ساعة تدريبية'}</p>
                 </div>
                 <div class="flex justify-between items-center pt-4 border-t border-slate-50">
@@ -359,18 +386,18 @@ async function handleNewRegistration(e) {
                 }
             }
             
-            alert("اتممت عملية التسجيل بنجاح في الأكاديمية!");
+           showToast("اتممت عملية التسجيل بنجاح في الأكاديمية!");
             setTimeout(function() { 
                 window.open("https://whatsapp.com/channel/0029VbCDK6M4IBhBR3jvVY0Y", "_blank"); 
             }, 3000);
         } else {
-            alert("❌ خطأ أثناء التسجيل: " + (res ? res.error : "غير معروف"));
+           showToast("❌ خطأ أثناء التسجيل: " + (res ? res.error : "غير معروف"));
             submitBtn.disabled = false; 
             submitBtn.innerText = originalText; 
             submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
         }
     } catch(err) {
-        alert("❌ خطأ اتصال بالسيرفر: " + err); 
+        showToast("❌ خطأ اتصال بالسيرفر: " + err); 
         submitBtn.disabled = false; 
         submitBtn.innerText = originalText; 
         submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
@@ -1026,9 +1053,9 @@ function renderTestimonialsHome(data) {
                         <i class="fas fa-quote-left"></i>
                     </div>
                     <div class="text-xs mb-3 text-amber-400">${stars}</div>
-                    <p class="text-xs text-slate-600 leading-relaxed mb-4">"${t.text}"</p>
-                </div>
-                <div class="font-bold text-[#0B1F4D] text-sm mt-auto">- ${t.name}</div>
+                  <p class="text-xs text-slate-600 leading-relaxed mb-4">"${escapeHTML(t.text)}"</p>
+                // ...
+               <div class="font-bold text-[#0B1F4D] text-sm mt-auto">- ${escapeHTML(t.name)}</div>
             </div>
         `);
     });
@@ -1535,8 +1562,8 @@ function renderNewsCards(news) {
                     <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full"><i class="fas fa-calendar-alt"></i> ${n.date}</span>
                     <a href="https://wa.me/?text=${shareTxt}" target="_blank" onclick="event.stopPropagation()" class="text-emerald-500 hover:text-emerald-700 text-lg transition"><i class="fab fa-whatsapp"></i></a>
                 </div>
-                <h3 class="text-sm font-bold text-[#0B1F4D] mb-2 leading-snug">${n.title}</h3>
-                <p class="text-slate-500 text-xs leading-relaxed line-clamp-2">${n.details}</p>
+               <h3 class="text-sm font-bold text-[#0B1F4D] mb-2 leading-snug">${escapeHTML(n.title)}</h3>
+               <p class="text-slate-500 text-xs leading-relaxed line-clamp-2">${escapeHTML(n.details)}</p>
             </div>
          </div>`);
     });
