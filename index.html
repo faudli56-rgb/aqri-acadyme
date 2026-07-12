@@ -867,6 +867,42 @@
         </div>
     </div>
 
+    <!-- نافذة تعديل الأخبار -->
+<div id="edit-news-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-2xl">
+        <h3 class="font-bold text-[#0B1F4D] mb-4 text-lg border-b pb-2">تعديل الخبر</h3>
+        <input type="hidden" id="edit-news-id">
+        <div class="space-y-3">
+            <input type="text" id="edit-news-title" placeholder="عنوان الخبر" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <textarea id="edit-news-content" placeholder="التفاصيل" rows="3" class="w-full px-3 py-2 border rounded-lg text-sm"></textarea>
+        </div>
+        <div class="flex gap-2 mt-5">
+            <button onclick="submitNewsEdit()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm">حفظ التعديلات</button>
+            <button onclick="document.getElementById('edit-news-modal').classList.add('hidden')" class="bg-slate-300 text-slate-800 px-4 py-2 rounded-lg font-bold text-sm">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة تعديل العروض والشركات -->
+<div id="edit-ad-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-2xl">
+        <h3 class="font-bold text-[#0B1F4D] mb-4 text-lg border-b pb-2">تعديل العرض/الشركة</h3>
+        <input type="hidden" id="edit-ad-id">
+        <div class="space-y-3">
+            <input type="text" id="edit-ad-title" placeholder="عنوان العرض" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <select id="edit-ad-type" class="w-full px-3 py-2 border rounded-lg text-sm">
+                <option value="منظمات دولية ومحلية">منظمات دولية ومحلية</option>
+                <option value="شركات ومؤسسات">شركات ومؤسسات خاصة</option>
+                <option value="مبادرات مجتمعية">مبادرات مجتمعية</option>
+            </select>
+            <input type="text" id="edit-ad-date" placeholder="المدة/التاريخ" class="w-full px-3 py-2 border rounded-lg text-sm">
+        </div>
+        <div class="flex gap-2 mt-5">
+            <button onclick="submitAdEdit()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm">حفظ التعديلات</button>
+            <button onclick="document.getElementById('edit-ad-modal').classList.add('hidden')" class="bg-slate-300 text-slate-800 px-4 py-2 rounded-lg font-bold text-sm">إلغاء</button>
+        </div>
+    </div>
+</div>
     <!-- ===== زر الواتساب العائم ===== -->
     <div onclick="trackButtonClick('WhatsApp_Float'); window.open('https://wa.me/967777644293', '_blank')" class="fixed bottom-6 left-6 bg-[#25D366] text-white px-4 py-2.5 rounded-full shadow-2xl z-50 flex items-center gap-2 cursor-pointer hover:scale-105 transition active:scale-95 border border-white/20 select-none">
         <i class="fab fa-whatsapp text-2xl"></i>
