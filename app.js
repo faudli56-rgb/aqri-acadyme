@@ -1589,7 +1589,7 @@ function renderAdminNewsList(news) {
                 </div>
             </div>`);
     });
-
+}
 function renderAdminAdsList(ads) {
     var list = document.getElementById('admin-ads-list');
     if (!list) return;
@@ -1610,7 +1610,7 @@ function renderAdminAdsList(ads) {
                 </div>
             </div>`);
     });
-
+}
 // ==========================================
 // دوال إضافة وحذف الأخبار والإعلانات
 // ==========================================
