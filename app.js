@@ -1,8 +1,7 @@
 /**
  * app.js - جافاسكربت الموقع الرئيسي
  * أكاديمية اقرأ للاستشارات والتدريب
- * 
- * تم تعديل جميع استدعاءات google.script.run لاستخدام دوال api.js
+ * * تم تعديل جميع استدعاءات google.script.run لاستخدام دوال api.js
  */
 
 // ==========================================
@@ -14,6 +13,7 @@ var globalAds = [];
 var currentAdIndex = 0;
 var totalViews = 1482;
 var totalClicks = 342;
+
 function showToast(message, isError = false) {
     const toast = document.createElement('div');
     // استخدام ألوان Tailwind المدعومة في مشروعك
@@ -28,6 +28,7 @@ function showToast(message, isError = false) {
         setTimeout(() => toast.remove(), 300); 
     }, 3500);
 }
+
 // محاولة استرجاع البيانات من التخزين المحلي
 try {
     if (localStorage.getItem('site_views')) totalViews = parseInt(localStorage.getItem('site_views'), 10);
@@ -48,6 +49,7 @@ function escapeHTML(str) {
         return charsToReplace[tag] || tag;
     });
 }
+
 // ==========================================
 // دوال التهيئة والتنقل
 // ==========================================
@@ -123,16 +125,11 @@ function navigateTo(pageId) {
     // --- 2. التنفيذ الطبيعي للتنقل إذا لم تكن هناك عوائق ---
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('header nav a').forEach(b => b.classList.remove('nav-active'));
-    
-    if(document.getElementById('page-' + pageId)) {
-        document.getElementById('page-' + pageId).classList.add('active');
-    }
-    if(document.getElementById('btn-' + pageId)) {
-        document.getElementById('btn-' + pageId).classList.add('nav-active');
-    }
-    
+    if(document.getElementById('page-' + pageId)) document.getElementById('page-' + pageId).classList.add('active');
+    if(document.getElementById('btn-' + pageId)) document.getElementById('btn-' + pageId).classList.add('nav-active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
 function trackButtonClick(buttonName) {
     if(buttonName === 'WhatsApp_Float') { 
         try { 
@@ -185,6 +182,7 @@ function renderAdsGrid(ads) {
         container.insertAdjacentHTML('beforeend', cardMarkup);
     });
 }
+
 function moveAdSlide(dir) {
     if (!globalAds || globalAds.length === 0) return;
     currentAdIndex = (currentAdIndex + dir + globalAds.length) % globalAds.length;
@@ -330,6 +328,7 @@ function renderCourses(courses) {
         }
     });
 }
+
 function filterCourses(category) {
     document.querySelectorAll('#courses-list-container > div').forEach(function(card) {
         card.style.display = (category === 'all' || card.getAttribute('data-category') === category) ? 'flex' : 'none';
@@ -491,6 +490,7 @@ function requestB2BQuote(offerName, offerType) {
         console.error("خطأ في فتح الواتساب:", e);
     }
 }
+
 // ==========================================
 // دوال التحقق من الشهادات
 // ==========================================
@@ -534,6 +534,7 @@ function renderVerificationResult(result) {
         resBox.innerHTML = `<div class="text-rose-700 font-extrabold text-sm mb-2">✕ حظر التحقق الإلكتروني</div><p class="font-semibold text-slate-600">عذراً، لم نجد قيد رسمي يطابق هذا الرقم.</p>`;
     }
 }
+
 // ==========================================
 // دوال نظام الدخول والصلاحيات
 // ==========================================
@@ -993,57 +994,42 @@ function openEditCourseModal(id, title, trainer, dur, fee, cat) {
     document.getElementById('edit-dur').value = dur;
     document.getElementById('edit-fee').value = fee;
     document.getElementById('edit-cat').value = cat;
-    document.getElementById('edit-img').value = ''; // تصفير حقل الصورة عند فتح النافذة
     document.getElementById('edit-course-modal').classList.remove('hidden');
 }
 
 async function submitCourseEdit() {
     var id = document.getElementById('edit-course-id').value;
+    var data = {
+        title: document.getElementById('edit-title').value,
+        trainer: document.getElementById('edit-trainer').value,
+        duration: document.getElementById('edit-dur').value,
+        fee: document.getElementById('edit-fee').value,
+        category: document.getElementById('edit-cat').value
+    };
+    
     var btn = document.querySelector('#edit-course-modal button'); 
     var originalText = btn.innerText;
-    btn.innerText = "جاري التحديث والرفع..."; 
+    btn.innerText = "جاري التحديث..."; 
     btn.disabled = true;
 
-    var fileInput = document.getElementById('edit-img');
-
-    // دالة الإرسال للسيرفر
-    var sendData = async function(base64Img) {
-        var data = {
-            title: document.getElementById('edit-title').value,
-            trainer: document.getElementById('edit-trainer').value,
-            duration: document.getElementById('edit-dur').value,
-            fee: document.getElementById('edit-fee').value,
-            category: document.getElementById('edit-cat').value,
-            image: base64Img // إرفاق الصورة إن وجدت
-        };
-        
-        try {
-            const res = await updateCourseFromAdmin(id, data);
-            btn.innerText = originalText; 
-            btn.disabled = false;
-            if(res.success) {
-                alert("✅ " + res.message);
-                document.getElementById('edit-course-modal').classList.add('hidden');
-                loadCoursesFromServer(); 
-            } else { 
-                alert("❌ خطأ: " + res.error); 
-            }
-        } catch(err) {
-            alert("خطأ سيرفر: " + err);
-            btn.innerText = originalText; 
-            btn.disabled = false;
+    try {
+        const res = await updateCourseFromAdmin(id, data);
+        btn.innerText = originalText; 
+        btn.disabled = false;
+        if(res.success) {
+            alert("✅ " + res.message);
+            document.getElementById('edit-course-modal').classList.add('hidden');
+            loadCoursesFromServer(); 
+        } else { 
+            alert("❌ خطأ: " + res.error); 
         }
-    };
-
-    // التحقق مما إذا كان هناك صورة جديدة مرفقة
-    if (fileInput.files.length > 0) {
-        var reader = new FileReader();
-        reader.onload = function(ev) { sendData(ev.target.result); };
-        reader.readAsDataURL(fileInput.files[0]);
-    } else { 
-        sendData(""); // إرسال النص بدون صورة جديدة
+    } catch(err) {
+        alert("خطأ سيرفر: " + err);
+        btn.innerText = originalText; 
+        btn.disabled = false;
     }
 }
+
 // ==========================================
 // دوال آراء العملاء
 // ==========================================
@@ -1103,7 +1089,7 @@ function renderTestimonialsHome(data) {
                     </div>
                     <div class="text-xs mb-3 text-amber-400">${stars}</div>
                   <p class="text-xs text-slate-600 leading-relaxed mb-4">"${escapeHTML(t.text)}"</p>
-                // ...
+                </div>
                <div class="font-bold text-[#0B1F4D] text-sm mt-auto">- ${escapeHTML(t.name)}</div>
             </div>
         `);
@@ -1629,20 +1615,17 @@ function renderAdminNewsList(news) {
     }
     
     news.forEach(function(item) {
-        // معالجة النصوص لتجنب كسر كود HTML بسبب علامات التنصيص والأسطر الجديدة
-        let safeTitle = item.title.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-        let safeDetails = item.details.replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n").replace(/\r/g, "");
-
         adminList.insertAdjacentHTML('beforeend', `
             <div class="flex justify-between items-center p-2.5 bg-slate-50 border rounded-xl text-xs mb-2">
                 <span class="truncate w-1/2 font-bold text-[#0B1F4D]">${item.title}</span>
                 <div class="flex gap-1">
-                    <button onclick="openEditNewsModal('${item.id}', '${safeTitle}', '${safeDetails}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded shadow-sm transition"><i class="fas fa-edit"></i> تعديل</button>
+                    <button onclick="openEditNewsModal('${item.id}', '${item.title.replace(/'/g, "\\'")}', '${item.details.replace(/'/g, "\\'")}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded shadow-sm transition"><i class="fas fa-edit"></i> تعديل</button>
                     <button onclick="deleteNewsFinalAction('${item.id}')" class="bg-rose-500 hover:bg-rose-600 text-white px-2 py-1 rounded shadow-sm transition"><i class="fas fa-trash-alt"></i> حذف</button>
                 </div>
             </div>`);
     });
 }
+
 function renderAdminAdsList(ads) {
     var list = document.getElementById('admin-ads-list');
     if (!list) return;
@@ -1654,21 +1637,17 @@ function renderAdminAdsList(ads) {
     }
     
    ads.forEach(function(item) {
-        // معالجة النصوص لتجنب كسر كود HTML بسبب علامات التنصيص
-        let safeTitle = item.title.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-        let safeType = item.type.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-        let safeDate = item.date.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-
         list.insertAdjacentHTML('beforeend', `
             <div class="flex justify-between items-center p-2.5 bg-slate-50 border rounded-xl text-xs mb-2">
                 <span class="truncate w-1/2 font-bold text-[#0B1F4D]">${item.title}</span>
                 <div class="flex gap-1">
-                    <button onclick="openEditAdModal('${item.id}', '${safeTitle}', '${safeType}', '${safeDate}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded shadow-sm transition"><i class="fas fa-edit"></i> تعديل</button>
+                    <button onclick="openEditAdModal('${item.id}', '${item.title.replace(/'/g, "\\'")}', '${item.type}', '${item.date}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded shadow-sm transition"><i class="fas fa-edit"></i> تعديل</button>
                     <button onclick="deleteAdFinalAction('${item.id}')" class="bg-rose-500 hover:bg-rose-600 text-white px-2 py-1 rounded shadow-sm transition"><i class="fas fa-trash-alt"></i> حذف</button>
                 </div>
             </div>`);
     });
 }
+
 // ==========================================
 // دوال إضافة وحذف الأخبار والإعلانات
 // ==========================================
@@ -1793,6 +1772,7 @@ async function deleteAdFinalAction(adId) {
         alert("❌ خطأ في الاتصال: " + err);
     }
 }
+
 // ====== دوال تعديل الأخبار ======
 function openEditNewsModal(id, title, content) {
     document.getElementById('edit-news-id').value = id;
@@ -1850,6 +1830,7 @@ async function submitAdEdit() {
         } else alert("❌ خطأ: " + res.error);
     } catch(err) { alert("خطأ سيرفر: " + err); btn.innerText = originalText; btn.disabled = false; }
 }
+
 // ==========================================
 // دوال البحث والفلترة
 // ==========================================
@@ -1933,8 +1914,10 @@ function safeGetStorage(key) {
     try { return localStorage.getItem(key); } 
     catch(e) { return null; }
 }
+
+
 // ==========================================
-// نظام الجولة التفاعلية للمستخدمين الجدد
+// نظام الجولة التفاعلية للمستخدمين الجدد (محدث ومحسن بالكامل للهواتف الذكية)
 // ==========================================
 
 var onboardingSteps = [
@@ -1963,35 +1946,36 @@ var onboardingSteps = [
 var currentTourStep = 0;
 
 function checkAndStartOnboarding() {
-    // التحقق مما إذا كان المستخدم قد أتم الجولة سابقاً
     if (localStorage.getItem('onboarding_completed') === 'true') {
-        return; // زائر قديم، لا تظهر الجولة
+        return;
     }
-    
-    // بدء الجولة بعد إغلاق نافذة الترحيب المعتادة بـ 1.5 ثانية
     setTimeout(startOnboardingTour, 1500);
 }
 
 function startOnboardingTour() {
     currentTourStep = 0;
     
-    // 1. إنشاء خلفية التعتيم
+    // 1. طبقة شفافة لمنع الضغط العشوائي على محتويات الموقع أثناء الجولة
+    var clickBlocker = document.createElement('div');
+    clickBlocker.id = 'tour-click-blocker';
+    clickBlocker.className = 'fixed inset-0 z-[60]';
+    document.body.appendChild(clickBlocker);
+    
+    // 2. الفتحة المضيئة (Focus Hole) للتسليط المباشر مع التعتيم المحيط
     var backdrop = document.createElement('div');
     backdrop.id = 'tour-backdrop';
-    backdrop.className = 'fixed inset-0 bg-black/75 backdrop-blur-[2px] z-[60] transition-all duration-300 opacity-0';
+    backdrop.className = 'fixed z-[65] rounded-xl transition-all duration-500 pointer-events-none opacity-0';
+    backdrop.style.boxShadow = '0 0 0 9999px rgba(15, 23, 42, 0.80)';
+    backdrop.style.border = '2px solid #D4A017';
     document.body.appendChild(backdrop);
     
-    // 2. إنشاء صندوق التعليمات العائم
+    // 3. صندوق التعليمات والشروحات العائم
     var guideBox = document.createElement('div');
     guideBox.id = 'tour-guide-box';
-    guideBox.className = 'fixed z-[75] bg-white rounded-2xl shadow-2xl p-6 w-[320px] text-right text-xs border border-slate-100 transition-all duration-300 opacity-0 transform translate-y-4';
+    guideBox.className = 'fixed z-[75] bg-white rounded-2xl shadow-2xl p-6 w-[320px] max-w-[90vw] text-right text-xs border border-slate-100 transition-all duration-500 opacity-0';
     document.body.appendChild(guideBox);
     
-    // إظهار العناصر بسلاسة
-    setTimeout(function() {
-        backdrop.classList.remove('opacity-0');
-        showTourStep();
-    }, 50);
+    showTourStep();
 }
 
 function showTourStep() {
@@ -2001,50 +1985,80 @@ function showTourStep() {
     }
     
     var step = onboardingSteps[currentTourStep];
-    var element = document.getElementById(step.elementId);
+    var isMobile = window.innerWidth <= 768; // فحص نوع الجهاز الحالي
+    
+    // تحويل التوجيه تلقائياً لمعرف الجوال إذا كان التصفح من هاتف محمول
+    var targetId = isMobile ? step.elementId + '-mob' : step.elementId;
+    var element = document.getElementById(targetId);
     var guideBox = document.getElementById('tour-guide-box');
+    var backdrop = document.getElementById('tour-backdrop');
     
-    // إزالة تسليط الضوء عن العناصر السابقة
-    document.querySelectorAll('.tour-highlight').forEach(el => {
-        el.classList.remove('tour-highlight', 'relative', 'z-[70]', 'ring-4', 'ring-[#D4A017]', 'bg-[#0B1F4D]', 'rounded-lg');
-    });
-    
-    if (element) {
-        // تسليط الضوء على العنصر المستهدف باستخدام كلاسات Tailwind
-        element.classList.add('tour-highlight', 'relative', 'z-[70]', 'ring-4', 'ring-[#D4A017]', 'bg-[#0B1F4D]', 'rounded-lg', 'p-1');
-        
-        // حساب موقع العنصر لنقل صندوق التعليمات بجانبه أو أسفله
-        var rect = element.getBoundingClientRect();
-        guideBox.style.top = (rect.bottom + window.scrollY + 12) + 'px';
-        guideBox.style.left = Math.max(10, (rect.left + (rect.width / 2) - 160)) + 'px';
-        
-        // التمرير الذكي للعنصر ليكون واضحاً للمستخدم
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-        // إذا لم يكن العنصر موجوداً (مثلاً في الجوال)، يتم توسيط الصندوق في الشاشة
-        guideBox.style.top = '40%';
-        guideBox.style.left = '50%';
-        guideBox.style.transform = 'translate(-50%, -50%)';
+    // في الجوال: فتح القائمة المنسدلة تلقائياً لكي يرى المستخدم العناصر بوضوح
+    if (isMobile) {
+        var menu = document.getElementById('mobile-menu');
+        if (menu && menu.classList.contains('hidden')) {
+            toggleMobileMenu(); 
+        }
     }
-    
-    // تحديث محتوى صندوق التعليمات
+
+    // تحديث المحتوى النصي والأزرار داخل بطاقة الشرح
     guideBox.innerHTML = `
         <div class="flex justify-between items-center border-b pb-2 mb-3">
             <h4 class="font-black text-[#0B1F4D] text-sm"><i class="fas fa-magic text-[#D4A017] ml-1"></i> ${step.title}</h4>
-            <span class="text-[10px] text-slate-400 font-bold">${currentTourStep + 1} من ${onboardingSteps.length}</span>
+            <span class="text-[10px] text-slate-400 font-bold">${currentTourStep + 1} / ${onboardingSteps.length}</span>
         </div>
         <p class="text-slate-600 leading-relaxed font-bold mb-4">${step.content}</p>
         <div class="flex gap-2 border-t pt-3">
-            <button onclick="nextTourStep()" class="flex-1 bg-[#0B1F4D] text-white py-2 rounded-xl font-bold hover:bg-[#132F6B] transition shadow-sm">
+            <button onclick="nextTourStep()" class="flex-1 bg-[#0B1F4D] text-white py-2 rounded-xl font-bold hover:bg-[#132F6B] transition shadow-sm cursor-pointer">
                 ${currentTourStep === onboardingSteps.length - 1 ? 'إنهاء الجولة' : 'التالي ➔'}
             </button>
-            <button onclick="endOnboardingTour()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 px-3 py-2 rounded-xl font-bold border">
+            <button onclick="endOnboardingTour()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 px-3 py-2 rounded-xl font-bold border cursor-pointer">
                 تخطي
             </button>
         </div>
     `;
-    
-    guideBox.classList.remove('opacity-0', 'translate-y-4');
+
+    // حسابات المواقع الجغرافية للعناصر المضيئة على الشاشات المختلفة
+    if (element && element.offsetHeight > 0) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        setTimeout(function() {
+            var rect = element.getBoundingClientRect();
+            
+            // مطابقة مقاس المربع المضيء الذهبي فوق زر القائمة المختار
+            backdrop.style.top = (rect.top - 4) + 'px';
+            backdrop.style.left = (rect.left - 6) + 'px';
+            backdrop.style.width = (rect.width + 12) + 'px';
+            backdrop.style.height = (rect.height + 8) + 'px';
+            backdrop.classList.remove('opacity-0');
+            
+            // في الجوال: تثبيت صندوق الشرح أسفل الشاشة لمنع الازدحام وضيق المساحة
+            if (isMobile) {
+                guideBox.style.bottom = '20px';
+                guideBox.style.top = 'auto';
+                guideBox.style.left = '50%';
+                guideBox.style.transform = 'translateX(-50%)';
+            } else {
+                // في الكمبيوتر: حساب التموضع الدقيق أسفل الزر مباشرة
+                guideBox.style.bottom = 'auto';
+                guideBox.style.top = (rect.bottom + 16) + 'px';
+                guideBox.style.transform = 'translateY(0)';
+                var leftPos = rect.left + (rect.width / 2) - 160;
+                if (leftPos < 10) leftPos = 10;
+                if (leftPos + 320 > window.innerWidth) leftPos = window.innerWidth - 330;
+                guideBox.style.left = leftPos + 'px';
+            }
+            
+            guideBox.classList.remove('opacity-0');
+        }, 300);
+    } else {
+        // حماية احتياطية في حال تعذر العثور على العنصر
+        backdrop.classList.add('opacity-0');
+        guideBox.style.top = '50%';
+        guideBox.style.left = '50%';
+        guideBox.style.transform = 'translate(-50%, -50%)';
+        guideBox.classList.remove('opacity-0');
+    }
 }
 
 function nextTourStep() {
@@ -2053,20 +2067,20 @@ function nextTourStep() {
 }
 
 function endOnboardingTour() {
-    // إزالة عناصر الجولة من الـ DOM
+    var blocker = document.getElementById('tour-click-blocker');
     var backdrop = document.getElementById('tour-backdrop');
     var guideBox = document.getElementById('tour-guide-box');
     
+    if (blocker) blocker.remove();
     if (backdrop) backdrop.remove();
     if (guideBox) guideBox.remove();
     
-    // إزالة كلاسات تسليط الضوء عن كل العناصر
-    document.querySelectorAll('.tour-highlight').forEach(el => {
-        el.classList.remove('tour-highlight', 'relative', 'z-[70]', 'ring-4', 'ring-[#D4A017]', 'bg-[#0B1F4D]', 'rounded-lg', 'p-1');
-    });
+    // عند انتهاء الجولة أو تخطيها، إغلاق قائمة الجوال ليعود الموقع طبيعياً
+    var menu = document.getElementById('mobile-menu');
+    if (menu && !menu.classList.contains('hidden')) {
+        toggleMobileMenu();
+    }
     
-    // حفظ في الـ localStorage حتى لا تظهر الجولة مجدداً لهذا المتصفح
     localStorage.setItem('onboarding_completed', 'true');
-    
-    showToast('تمت الجولة التعليمية بنجاح! نتمنى لك تجربة ممتعة.');
+    showToast('تمت الجولة بنجاح! شكراً لك.');
 }
