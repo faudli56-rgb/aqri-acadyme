@@ -281,6 +281,7 @@ function renderCourses(courses) {
                 </div>
                 <div class="flex justify-between items-center pt-4 border-t border-slate-50">
                     <span class="text-amber-600 font-extrabold text-sm">${c.fee}</span>
+                    ${c.discount ? `<del class="text-slate-400 text-[10px] font-bold">${c.discount}</del>` : ''}
                     <div class="flex gap-2">
                         <button onclick="openLandingPage('${c.title}')" class="bg-slate-100 hover:bg-slate-200 text-[#0B1F4D] text-xs font-bold px-3 py-2 rounded-xl border border-slate-200 transition cursor-pointer">التفاصيل</button>
                         <button onclick="selectCourseDirectly('${c.title}')" class="bg-[#0B1F4D] hover:bg-[#132F6B] text-white text-xs font-bold px-3 py-2 rounded-xl shadow-md transition cursor-pointer">سجل الآن</button>
@@ -321,7 +322,7 @@ function renderCourses(courses) {
                 <span class="font-bold text-[#0B1F4D] truncate w-1/3">${c.title}</span>
                 <div class="flex gap-1">
                     <button onclick="openDetailsModal('${c.title}', event)" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded shadow-sm transition">التفاصيل</button>
-                    <button onclick="openEditCourseModal('${c.id}', '${c.title}', '${c.trainer}', '${c.duration}', '${c.fee}', '${c.category}')" class="bg-emerald-600 text-white px-2 py-1 rounded shadow-sm">تعديل</button>
+                   <button onclick="openEditCourseModal('${c.id}', '${c.title}', '${c.trainer}', '${c.duration}', '${c.fee}', '${c.category}', '${c.discount || ''}')">تعديل</button>
                     <button onclick="deleteCourse('${c.id}')" class="bg-rose-500 text-white px-2 py-1 rounded shadow-sm">حذف</button>
                 </div>
             </div>`);
@@ -913,6 +914,7 @@ async function handleAddCourse(e) {
             title: document.getElementById('adm-course-title').value,
             trainer: document.getElementById('adm-course-trainer').value,
             fee: document.getElementById('adm-course-fee').value,
+            discount: document.getElementById('adm-course-discount').value, // الحقل الجديد
             category: document.getElementById('adm-course-cat').value,
             duration: document.getElementById('adm-course-duration').value,
             image: base64Img
@@ -987,13 +989,14 @@ async function deleteNews(title) {
 // دوال تعديل الدورات
 // ==========================================
 
-function openEditCourseModal(id, title, trainer, dur, fee, cat) {
+function openEditCourseModal(id, title, trainer, dur, fee, cat, discount) {
     document.getElementById('edit-course-id').value = id;
     document.getElementById('edit-title').value = title;
     document.getElementById('edit-trainer').value = trainer;
     document.getElementById('edit-dur').value = dur;
     document.getElementById('edit-fee').value = fee;
     document.getElementById('edit-cat').value = cat;
+    document.getElementById('edit-discount').value = discount || ''; // الحقل الجديد
     document.getElementById('edit-course-modal').classList.remove('hidden');
 }
 
@@ -1004,6 +1007,7 @@ async function submitCourseEdit() {
         trainer: document.getElementById('edit-trainer').value,
         duration: document.getElementById('edit-dur').value,
         fee: document.getElementById('edit-fee').value,
+        discount: document.getElementById('edit-discount').value, // الحقل الجديد
         category: document.getElementById('edit-cat').value
     };
     
