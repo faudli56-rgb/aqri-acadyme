@@ -2140,3 +2140,33 @@ function copyOrderID(btnElement) {
         btnElement.classList.remove('bg-emerald-50', 'border-emerald-200');
     }, 2000);
 }
+// ==========================================
+// دالة التسجيل في دورة أخرى
+// ==========================================
+function registerAnotherCourse() {
+    // 1. إخفاء رسالة النجاح
+    var successDiv = document.getElementById('successMessage');
+    if(successDiv) {
+        successDiv.style.display = 'none';
+        successDiv.classList.add('hidden');
+    }
+    
+    // 2. إعادة إظهار عناصر نموذج التسجيل لحالتها الطبيعية
+    var formChildren = document.getElementById('registration-form').children;
+    for (var i = 0; i < formChildren.length; i++) {
+         if (formChildren[i].id !== 'successMessage') { 
+             formChildren[i].style.display = ''; // إزالة الإخفاء
+         }
+    }
+    
+    // 3. تصفير جميع الحقول وإخفاء تفاصيل الدورة السابقة
+    document.getElementById('registration-form').reset();
+    var dynamicInfo = document.getElementById('course-dynamic-info');
+    if(dynamicInfo) {
+        dynamicInfo.classList.add('hidden');
+        dynamicInfo.innerHTML = '';
+    }
+    
+    // 4. توجيه الطالب فوراً إلى قسم الدورات التدريبية
+    navigateTo('courses');
+}
