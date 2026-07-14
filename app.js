@@ -60,22 +60,14 @@ function initializeWebsiteLayout() {
         localStorage.setItem('site_views', totalViews); 
     } catch(e) {}
     
+    // الأسطر المسؤولة عن تحميل محتوى الموقع (التي تم حذفها بالخطأ)
     loadCoursesFromServer();
     loadNewsFromServer();
     loadTestimonialsFromServer();
     loadRealAdsFromServer();
     loadPaymentMethods();
-
-    // 💡 الإضافة الجديدة: تسجيل الزائر بمجرد فتحه للموقع لأول مرة!
-    var sessionId = sessionStorage.getItem('visitor_session');
-    if (!sessionId) {
-        sessionId = 'زائر-' + Math.floor(Math.random() * 9999);
-        sessionStorage.setItem('visitor_session', sessionId);
-    }
-    if(typeof logVisitorActivity === 'function') {
-        logVisitorActivity('الرئيسية (دخول مباشر)', sessionId);
-    }
     
+    // التحقق مما إذا كانت النافذة قد ظهرت مسبقاً لهذا الزائر
     if (!localStorage.getItem('welcome_popup_shown')) {
         setTimeout(function() { 
             var welcomePopup = document.getElementById('welcome-popup');
@@ -86,6 +78,7 @@ function initializeWebsiteLayout() {
         }, 6000);
     }
 }
+
 function toggleMobileMenu() {
     var menu = document.getElementById('mobile-menu');
     var icon = document.getElementById('menu-toggle-icon');
@@ -653,11 +646,10 @@ async function handleLoginSubmit(e) {
                 }
                 document.getElementById('tab-title-users').innerText = "إدارة المتدربين";
             }
-             // 💡 إظهار سجل الزوار للمدير فقط
-                var visitorLogsDiv = document.getElementById('admin-only-visitor-logs');
-                if(visitorLogsDiv) visitorLogsDiv.classList.remove('hidden');
-                loadVisitorLogs(); 
-    
+               var visitorLogsDiv = document.getElementById('admin-only-visitor-logs');
+            if(visitorLogsDiv) visitorLogsDiv.classList.remove('hidden');
+            loadVisitorLogs(); // استدعاء الدالة لجلب البيانات
+            
             loadDashboardData(res.role, res.marketerCode, res.name);
             loadStatsData(res.role, res.marketerCode, res.name);
             closeLoginModal();
@@ -894,11 +886,6 @@ function switchAdminTab(tabId, btnElement) {
     document.getElementById(tabId).classList.add('block');
     btnElement.classList.remove('bg-transparent', 'text-slate-600');
     btnElement.classList.add('bg-[#0B1F4D]', 'text-white', 'shadow');
-
-    // 💡 الإضافة المفقودة: تحديث السجل فوراً عند النقر على الإحصائيات
-    if(tabId === 'tab-stats' && typeof loadVisitorLogs === 'function') {
-        loadVisitorLogs();
-    }
 }
 
 // ==========================================
@@ -2176,6 +2163,9 @@ function copyOrderID(btnElement) {
 // ==========================================
 // دالة التسجيل في دورة أخرى
 // ==========================================
+// ==========================================
+// دالة التسجيل في دورة أخرى
+// ==========================================
 function registerAnotherCourse() {
     // 1. إخفاء رسالة النجاح
     var successDiv = document.getElementById('successMessage');
@@ -2184,15 +2174,15 @@ function registerAnotherCourse() {
         successDiv.classList.add('hidden');
     }
     
-    // 2. إعادة إظهار عناصر نموذج التسجيل
+    // 2. إعادة إظهار عناصر نموذج التسجيل لحالتها الطبيعية
     var formChildren = document.getElementById('registration-form').children;
     for (var i = 0; i < formChildren.length; i++) {
          if (formChildren[i].id !== 'successMessage') { 
-             formChildren[i].style.display = ''; 
+             formChildren[i].style.display = ''; // إزالة الإخفاء
          }
     }
     
-    // 3. إعادة تنشيط زر التسجيل
+    // 💡 3. إعادة تنشيط زر التسجيل ليعمل من جديد (حل مشكلة التعليق)
     var submitBtn = document.getElementById('submit-btn');
     if(submitBtn) {
         submitBtn.disabled = false;
@@ -2200,7 +2190,7 @@ function registerAnotherCourse() {
         submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
     }
     
-    // 4. تصفير الحقول
+    // 4. تصفير جميع الحقول وإخفاء تفاصيل الدورة السابقة
     document.getElementById('registration-form').reset();
     var dynamicInfo = document.getElementById('course-dynamic-info');
     if(dynamicInfo) {
@@ -2208,29 +2198,65 @@ function registerAnotherCourse() {
         dynamicInfo.innerHTML = '';
     }
     
-    // 5. التوجيه
+    // 5. توجيه الطالب فوراً إلى قسم الدورات التدريبية
     navigateTo('courses');
-} // <-- تأكد أن هذا القوس يغلق دالة registerAnotherCourse
-
+}
 // ==========================================
 // رسالة التنبيه عند محاولة إغلاق الموقع أو التراجع
 // ==========================================
 window.addEventListener('beforeunload', function (e) {
+    // إلغاء الحدث الافتراضي
     e.preventDefault();
+    
+    // هذا السطر إجباري للمتصفحات الحديثة لكي تظهر رسالة التنبيه الافتراضية
     e.returnValue = ''; 
+    
     return '';
 });
-
 // ==========================================
-// منع الخروج العشوائي من الجوال (زر الرجوع)
+// جلب سجل الزوار للمدير
 // ==========================================
+async function loadVisitorLogs() {
+    var tbody = document.getElementById('visitor-logs-tbody');
+    if(!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">جاري جلب بيانات التتبع الحية...</td></tr>';
+    
+    try {
+        const res = await fetchVisitorLogs();
+        if(res && res.success && res.logs.length > 0) {
+            tbody.innerHTML = '';
+            res.logs.forEach(function(log) {
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 text-slate-500 font-bold dir-ltr text-right">${log.date}</td>
+                        <td class="p-3 text-[#D4A017] font-black">${log.session}</td>
+                        <td class="p-3 text-[#0B1F4D] font-bold">${log.page}</td>
+                    </tr>
+                `);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">لا توجد زيارات مسجلة حتى الآن</td></tr>';
+        }
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-rose-500">خطأ في جلب بيانات التتبع</td></tr>';
+    }
+}
+// ==========================================
+// منع الخروج العشوائي من الجوال (عند ضغط زر الرجوع)
+// ==========================================
+// 1. إضافة حالة وهمية للمتصفح بمجرد الدخول
 window.history.pushState({ noBackExitsApp: true }, '');
 
+// 2. مراقبة ضغط زر الرجوع في الجوال
 window.addEventListener('popstate', function(event) {
+    // إظهار رسالة التأكيد
     var leave = confirm("هل أنت متأكد أنك تريد الخروج من الأكاديمية؟");
+    
     if (leave) {
+        // إذا ضغط "موافق" السماح له بالخروج
         window.history.back();
     } else {
+        // إذا ضغط "إلغاء" يتم إعادته وتثبيته في الموقع
         window.history.pushState({ noBackExitsApp: true }, '');
     }
 });
