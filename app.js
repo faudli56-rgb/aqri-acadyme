@@ -135,14 +135,24 @@ function navigateTo(pageId) {
     if(document.getElementById('page-' + pageId)) document.getElementById('page-' + pageId).classList.add('active');
     if(document.getElementById('btn-' + pageId)) document.getElementById('btn-' + pageId).classList.add('nav-active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-}
 
-function trackButtonClick(buttonName) {
-    if(buttonName === 'WhatsApp_Float') { 
-        try { 
-            totalClicks += 1; 
-            localStorage.setItem('wa_clicks', totalClicks); 
-        } catch(e) {}
+    // 💡 3. كود تتبع تحركات الزائر (تمت إضافته هنا بنجاح)
+    var sessionId = sessionStorage.getItem('visitor_session');
+    if (!sessionId) {
+        sessionId = 'زائر-' + Math.floor(Math.random() * 9999);
+        sessionStorage.setItem('visitor_session', sessionId);
+    }
+    
+    var pageTitles = {
+        'home': 'الرئيسية', 'courses': 'الدورات التدريبية', 'b2b': 'خدمات الشركات',
+        'news': 'الأخبار', 'verification': 'فحص الشهادات', 'contact': 'تواصل معنا',
+        'register': 'استمارة التسجيل', 'payment': 'بوابة الدفع'
+    };
+    var pageName = pageTitles[pageId] || pageId;
+    
+    // إرسال البيانات للسيرفر في الخلفية
+    if(typeof logVisitorActivity === 'function') {
+        logVisitorActivity(pageName, sessionId);
     }
 }
 
@@ -634,6 +644,9 @@ async function handleLoginSubmit(e) {
                 if(document.getElementById('tab-btn-payments')) {
                     document.getElementById('tab-btn-payments').style.display = 'block';
                 }
+                var visitorLogsDiv = document.getElementById('admin-only-visitor-logs');
+            if(visitorLogsDiv) visitorLogsDiv.classList.remove('hidden');
+            loadVisitorLogs(); // استدعاء الدالة لجلب البيانات
                 document.getElementById('tab-title-users').innerText = "إدارة المتدربين";
             }
             
@@ -2200,3 +2213,31 @@ window.addEventListener('beforeunload', function (e) {
     
     return '';
 });
+// ==========================================
+// جلب سجل الزوار للمدير
+// ==========================================
+async function loadVisitorLogs() {
+    var tbody = document.getElementById('visitor-logs-tbody');
+    if(!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">جاري جلب بيانات التتبع الحية...</td></tr>';
+    
+    try {
+        const res = await fetchVisitorLogs();
+        if(res && res.success && res.logs.length > 0) {
+            tbody.innerHTML = '';
+            res.logs.forEach(function(log) {
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 text-slate-500 font-bold dir-ltr text-right">${log.date}</td>
+                        <td class="p-3 text-[#D4A017] font-black">${log.session}</td>
+                        <td class="p-3 text-[#0B1F4D] font-bold">${log.page}</td>
+                    </tr>
+                `);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">لا توجد زيارات مسجلة حتى الآن</td></tr>';
+        }
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-rose-500">خطأ في جلب بيانات التتبع</td></tr>';
+    }
+}
