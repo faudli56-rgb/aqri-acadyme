@@ -60,14 +60,30 @@ function initializeWebsiteLayout() {
         localStorage.setItem('site_views', totalViews); 
     } catch(e) {}
     
-    // الأسطر المسؤولة عن تحميل محتوى الموقع (التي تم حذفها بالخطأ)
     loadCoursesFromServer();
     loadNewsFromServer();
     loadTestimonialsFromServer();
     loadRealAdsFromServer();
     loadPaymentMethods();
+
+    // 💡 إصلاح: تسجيل الدخول الأولي لحظة فتح الموقع
+    var sessionId = sessionStorage.getItem('visitor_session');
+    if (!sessionId) {
+        sessionId = 'زائر-' + Math.floor(Math.random() * 9999);
+        sessionStorage.setItem('visitor_session', sessionId);
+    }
+    if(typeof logVisitorActivity === 'function') {
+        logVisitorActivity('الرئيسية (دخول الموقع)', sessionId);
+    }
+
+    // 💡 إصلاح: تسجيل الخروج لحظة إغلاق المتصفح أو التبويب
+    window.addEventListener('beforeunload', function() {
+        if(typeof logVisitorActivity === 'function' && sessionId) {
+            // نستخدم sendBeacon لضمان إرسال البيانات حتى أثناء إغلاق الصفحة
+            navigator.sendBeacon('https://script.google.com/macros/s/AKfycbx51syLRrRu0JrDhhgaySviP0hOp0yOhe-ymywoVb_nF2O2Gt2B-2AclzzL6fjRUzTu/exec', JSON.stringify({ action: 'logVisit', data: { pageName: 'خروج من الموقع', sessionId: sessionId } }));
+        }
+    });
     
-    // التحقق مما إذا كانت النافذة قد ظهرت مسبقاً لهذا الزائر
     if (!localStorage.getItem('welcome_popup_shown')) {
         setTimeout(function() { 
             var welcomePopup = document.getElementById('welcome-popup');
@@ -78,7 +94,6 @@ function initializeWebsiteLayout() {
         }, 6000);
     }
 }
-
 function toggleMobileMenu() {
     var menu = document.getElementById('mobile-menu');
     var icon = document.getElementById('menu-toggle-icon');
@@ -624,47 +639,37 @@ async function handleLoginSubmit(e) {
                 document.getElementById('marketer-link-box').classList.add('hidden');
             }
 
-            if(res.role !== 'admin') {
+           if(res.role !== 'admin') {
                 document.getElementById('tab-btn-content').style.display = 'none';
                 document.getElementById('tab-btn-settings').style.display = 'none';
-                if(document.getElementById('tab-btn-ads-news')) {
-                    document.getElementById('tab-btn-ads-news').style.display = 'none';
-                }
-                if(document.getElementById('tab-btn-payments')) {
-                    document.getElementById('tab-btn-payments').style.display = 'none';
-                }
+                if(document.getElementById('tab-btn-ads-news')) document.getElementById('tab-btn-ads-news').style.display = 'none';
+                if(document.getElementById('tab-btn-payments')) document.getElementById('tab-btn-payments').style.display = 'none';
                 document.getElementById('tab-title-users').innerText = "طلابي المسجلين";
                 switchAdminTab('tab-stats', document.getElementById('tab-btn-stats'));
+                
+                // 💡 إخفاء سجل الزوار كلياً عن غير المدير
+                var visitorLogsDiv = document.getElementById('admin-only-visitor-logs');
+                if(visitorLogsDiv) visitorLogsDiv.classList.add('hidden');
+
             } else {
                 document.getElementById('tab-btn-content').style.display = 'block';
                 document.getElementById('tab-btn-settings').style.display = 'block';
-                if(document.getElementById('tab-btn-ads-news')) {
-                    document.getElementById('tab-btn-ads-news').style.display = 'block';
-                }
-                if(document.getElementById('tab-btn-payments')) {
-                    document.getElementById('tab-btn-payments').style.display = 'block';
-                }
+                if(document.getElementById('tab-btn-ads-news')) document.getElementById('tab-btn-ads-news').style.display = 'block';
+                if(document.getElementById('tab-btn-payments')) document.getElementById('tab-btn-payments').style.display = 'block';
                 document.getElementById('tab-title-users').innerText = "إدارة المتدربين";
+                
+                // 💡 إظهار وتشغيل سجل الزوار لمدير الأكاديمية فقط
+                var visitorLogsDiv = document.getElementById('admin-only-visitor-logs');
+                if(visitorLogsDiv) visitorLogsDiv.classList.remove('hidden');
+                loadVisitorLogs(); 
             }
-               var visitorLogsDiv = document.getElementById('admin-only-visitor-logs');
-            if(visitorLogsDiv) visitorLogsDiv.classList.remove('hidden');
-            loadVisitorLogs(); // استدعاء الدالة لجلب البيانات
             
             loadDashboardData(res.role, res.marketerCode, res.name);
             loadStatsData(res.role, res.marketerCode, res.name);
             closeLoginModal();
         } else {
-            alert(res.message);
+            alert(res.message || res.error || "خطأ في بيانات الدخول");
         }
-        btn.innerText = "دخول"; 
-        btn.disabled = false;
-    } catch(err) {
-        alert("خطأ في الاتصال بالخادم: " + err); 
-        btn.innerText = "دخول"; 
-        btn.disabled = false;
-    }
-}
-
 function logout() {
     sessionStorage.clear();
     document.getElementById('admin-content').style.display = 'none';
@@ -706,15 +711,15 @@ async function loadDashboardData(role, code, name) {
             if (currentStatus === 'جديد' || currentStatus === '') {
                 statusBadge = `<span class="text-blue-600 bg-blue-50 px-2 py-1 rounded">جديد</span>`;
                 actionButtons = `
-                    <button onclick="updateStudentState('${row.orderID}', 'مقبول')" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600 m-1">قبول</button>
-                    <button onclick="updateStudentState('${row.orderID}', 'مرفوض')" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 m-1">رفض</button>
+                    <button onclick="changeStudentStateUI('${row.orderID}', 'مقبول')" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600 m-1">قبول</button>
+                    <button onclick="changeStudentStateUI('${row.orderID}', 'مرفوض')" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 m-1">رفض</button>
                 `;
             } 
             else if (currentStatus === 'مقبول') {
                 statusBadge = `<span class="text-green-600 bg-green-50 px-2 py-1 rounded">مقبول</span>`;
                 actionButtons = `
-                    <button onclick="updateStudentState('${row.orderID}', 'تم تسديد الشهادة')" class="bg-[#D4A017] text-white px-2 py-1 rounded text-xs hover:bg-yellow-600 m-1 shadow-sm">سدد الشهادة</button>
-                    <button onclick="updateStudentState('${row.orderID}', 'لم يتم تسديد الشهادة')" class="bg-gray-500 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 m-1 shadow-sm">لم يسدد</button>
+                    <button onclick="changeStudentStateUI('${row.orderID}', 'تم تسديد الشهادة')" class="bg-[#D4A017] text-white px-2 py-1 rounded text-xs hover:bg-yellow-600 m-1 shadow-sm">سدد الشهادة</button>
+                    <button onclick="changeStudentStateUI('${row.orderID}', 'لم يتم تسديد الشهادة')" class="bg-gray-500 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 m-1 shadow-sm">لم يسدد</button>
                 `;
             } 
             else if (currentStatus === 'تم تسديد الشهادة') {
@@ -724,7 +729,7 @@ async function loadDashboardData(role, code, name) {
             else if (currentStatus === 'لم يتم تسديد الشهادة') {
                 statusBadge = `<span class="text-gray-600 bg-gray-100 px-2 py-1 rounded">لم يسدد</span>`;
                 actionButtons = `
-                    <button onclick="updateStudentState('${row.orderID}', 'تم تسديد الشهادة')" class="bg-[#D4A017] text-white px-2 py-1 rounded text-xs hover:bg-yellow-600 m-1 shadow-sm">تأكيد التسديد</button>
+                    <button onclick="changeStudentStateUI('${row.orderID}', 'تم تسديد الشهادة')" class="bg-[#D4A017] text-white px-2 py-1 rounded text-xs hover:bg-yellow-600 m-1 shadow-sm">تأكيد التسديد</button>
                 `;
             }
             else if (currentStatus === 'مرفوض') {
@@ -1344,13 +1349,14 @@ async function saveCourseDetails(event) {
 // دوال تحديث حالة المتدرب
 // ==========================================
 
-async function updateStudentState(orderId, newStatus) {
+async function changeStudentStateUI(orderId, newStatus) {
     if(!confirm("هل تريد تغيير حالة الطلب إلى: " + newStatus + "؟")) return;
     
     document.body.style.cursor = 'wait';
     
     try {
-        const res = await updateStudentState(orderId, newStatus);
+        // استدعاء دالة API الأصلية لفك التعارض البرمجي
+        const res = await callAPI('updateStudentState', { orderId, newStatus });
         document.body.style.cursor = 'default';
         if(res && res.success) {
             alert("✅ تم تغيير الحالة بنجاح إلى: " + res.newStatus);
@@ -1360,14 +1366,13 @@ async function updateStudentState(orderId, newStatus) {
             var currentName = sessionStorage.getItem('name');
             loadDashboardData(currentRole, currentCode, currentName);
         } else {
-            alert("❌ خطأ: " + res.error);
+            alert("❌ خطأ: " + (res.error || res.message));
         }
     } catch(err) {
         document.body.style.cursor = 'default';
         alert("❌ فشل الاتصال بالخادم: " + err);
     }
 }
-
 // ==========================================
 // دوال نظام المدفوعات
 // ==========================================
