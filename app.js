@@ -2114,3 +2114,29 @@ function endOnboardingTour() {
     localStorage.setItem('onboarding_completed', 'true');
     showToast('تمت الجولة بنجاح! شكراً لك.');
 }
+// ==========================================
+// دالة نسخ رقم الطلب
+// ==========================================
+function copyOrderID(btnElement) {
+    var orderIDText = document.getElementById('displayOrderID').innerText;
+    if (!orderIDText) return;
+    
+    // إنشاء حقل نصي وهمي لنسخ النص منه
+    var tempInput = document.createElement("input");
+    tempInput.value = orderIDText;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+    
+    // تغيير شكل الزر لإظهار نجاح النسخ
+    var originalHTML = btnElement.innerHTML;
+    btnElement.innerHTML = '<i class="fas fa-check text-emerald-600"></i> تم';
+    btnElement.classList.add('bg-emerald-50', 'border-emerald-200');
+    
+    // إعادته لشكله الأصلي بعد ثانيتين
+    setTimeout(function() {
+        btnElement.innerHTML = originalHTML;
+        btnElement.classList.remove('bg-emerald-50', 'border-emerald-200');
+    }, 2000);
+}
