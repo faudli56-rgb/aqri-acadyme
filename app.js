@@ -407,7 +407,14 @@ async function handleNewRegistration(e) {
     submitBtn.innerText = 'جاري التسجيل والربط...';
     submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
 
+    // 💡 توليد رقم عشوائي من 4 خانات (بين 1000 و 9999)
+    var randomNum = Math.floor(1000 + Math.random() * 9000); 
+    // 💡 التنسيق الجديد المطلق: IQR متبوعة بمسافة ثم الرقم (مثال: IQR 1001)
+    var generatedOrderID = "IQR " + randomNum; 
+
+    // تضمين الرقم المولد ضمن البيانات المرسلة للسيرفر
     var studentData = {
+        orderID: generatedOrderID, 
         nameAr: document.getElementById('reg-name-ar') ? document.getElementById('reg-name-ar').value : '',
         nameEn: document.getElementById('reg-name-en') ? document.getElementById('reg-name-en').value : '',
         whatsapp: document.getElementById('reg-whatsapp') ? document.getElementById('reg-whatsapp').value : '',
@@ -435,7 +442,8 @@ async function handleNewRegistration(e) {
                 successDiv.classList.remove('hidden');
                 successDiv.style.display = 'block';
                 if(document.getElementById('displayOrderID')) {
-                    document.getElementById('displayOrderID').innerText = res.orderID;
+                    // عرض الرقم بالتنسيق الجديد IQR 1001
+                    document.getElementById('displayOrderID').innerText = generatedOrderID;
                 }
             }
             
@@ -444,19 +452,18 @@ async function handleNewRegistration(e) {
                 window.open("https://whatsapp.com/channel/0029VbCDK6M4IBhBR3jvVY0Y", "_blank"); 
             }, 3000);
         } else {
-           showToast("❌ خطأ أثناء التسجيل: " + (res ? res.error : "غير معروف"));
+           showToast("❌ خطأ أثناء التسجيل: " + (res ? res.error : "غير معروف"), true);
             submitBtn.disabled = false; 
             submitBtn.innerText = originalText; 
             submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
         }
     } catch(err) {
-        showToast("❌ خطأ اتصال بالسيرفر: " + err); 
+        showToast("❌ خطأ اتصال بالسيرفر: " + err, true); 
         submitBtn.disabled = false; 
         submitBtn.innerText = originalText; 
         submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
     }
 }
-
 function searchNews() {
     var term = document.getElementById('news-search').value.toLowerCase();
     var cards = document.querySelectorAll('#news-list-container > div');
