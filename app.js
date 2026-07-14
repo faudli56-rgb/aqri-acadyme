@@ -639,7 +639,8 @@ async function handleLoginSubmit(e) {
                 document.getElementById('marketer-link-box').classList.add('hidden');
             }
 
-           if(res.role !== 'admin') {
+            // --- التحكم بالصلاحيات وإظهار/إخفاء سجل الزوار ---
+            if(res.role !== 'admin') {
                 document.getElementById('tab-btn-content').style.display = 'none';
                 document.getElementById('tab-btn-settings').style.display = 'none';
                 if(document.getElementById('tab-btn-ads-news')) document.getElementById('tab-btn-ads-news').style.display = 'none';
@@ -647,7 +648,7 @@ async function handleLoginSubmit(e) {
                 document.getElementById('tab-title-users').innerText = "طلابي المسجلين";
                 switchAdminTab('tab-stats', document.getElementById('tab-btn-stats'));
                 
-                // 💡 إخفاء سجل الزوار كلياً عن غير المدير
+                // إخفاء سجل الزوار كلياً عن غير المدير
                 var visitorLogsDiv = document.getElementById('admin-only-visitor-logs');
                 if(visitorLogsDiv) visitorLogsDiv.classList.add('hidden');
 
@@ -658,7 +659,7 @@ async function handleLoginSubmit(e) {
                 if(document.getElementById('tab-btn-payments')) document.getElementById('tab-btn-payments').style.display = 'block';
                 document.getElementById('tab-title-users').innerText = "إدارة المتدربين";
                 
-                // 💡 إظهار وتشغيل سجل الزوار لمدير الأكاديمية فقط
+                // إظهار وتشغيل سجل الزوار لمدير الأكاديمية فقط
                 var visitorLogsDiv = document.getElementById('admin-only-visitor-logs');
                 if(visitorLogsDiv) visitorLogsDiv.classList.remove('hidden');
                 loadVisitorLogs(); 
@@ -670,6 +671,14 @@ async function handleLoginSubmit(e) {
         } else {
             alert(res.message || res.error || "خطأ في بيانات الدخول");
         }
+        btn.innerText = "دخول"; 
+        btn.disabled = false;
+    } catch(err) {
+        alert("خطأ في الاتصال بالخادم: " + err); 
+        btn.innerText = "دخول"; 
+        btn.disabled = false;
+    }
+}
 function logout() {
     sessionStorage.clear();
     document.getElementById('admin-content').style.display = 'none';
