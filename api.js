@@ -216,3 +216,14 @@ async function uploadImage(base64Data, fileName) {
 async function uploadReceipt(base64Data, fileName) {
     return await callAPI('uploadReceipt', { base64Data, fileName });
 }
+// ==========================================
+// دوال تتبع الزوار (للمدير فقط)
+// ==========================================
+function logVisitorActivity(pageName, sessionId) {
+    // لا نستخدم await لكي لا نؤخر تصفح الزائر، يتم الإرسال في الخلفية
+    callAPI('logVisit', { pageName, sessionId }).catch(e => console.log(e));
+}
+
+async function fetchVisitorLogs() {
+    return await callAPI('fetchVisitorLogs');
+}
