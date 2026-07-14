@@ -2143,6 +2143,9 @@ function copyOrderID(btnElement) {
 // ==========================================
 // دالة التسجيل في دورة أخرى
 // ==========================================
+// ==========================================
+// دالة التسجيل في دورة أخرى
+// ==========================================
 function registerAnotherCourse() {
     // 1. إخفاء رسالة النجاح
     var successDiv = document.getElementById('successMessage');
@@ -2159,7 +2162,15 @@ function registerAnotherCourse() {
          }
     }
     
-    // 3. تصفير جميع الحقول وإخفاء تفاصيل الدورة السابقة
+    // 💡 3. إعادة تنشيط زر التسجيل ليعمل من جديد (حل مشكلة التعليق)
+    var submitBtn = document.getElementById('submit-btn');
+    if(submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'تأكيد التسجيل وإصدار رقم الطلب';
+        submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+    }
+    
+    // 4. تصفير جميع الحقول وإخفاء تفاصيل الدورة السابقة
     document.getElementById('registration-form').reset();
     var dynamicInfo = document.getElementById('course-dynamic-info');
     if(dynamicInfo) {
@@ -2167,6 +2178,6 @@ function registerAnotherCourse() {
         dynamicInfo.innerHTML = '';
     }
     
-    // 4. توجيه الطالب فوراً إلى قسم الدورات التدريبية
+    // 5. توجيه الطالب فوراً إلى قسم الدورات التدريبية
     navigateTo('courses');
 }
