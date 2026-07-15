@@ -2229,16 +2229,20 @@ async function loadVisitorLogs() {
     
     try {
         const res = await fetchVisitorLogs();
-        console.log("استجابة سيرفر الزوار:", res); // لفحص البيانات في الكونسول
         
-        // 💡 الإصلاح: التقاط البيانات سواء كان اسمها logs أو data
+        // 1. إذا كان هناك خطأ صريح من السيرفر (مثل اسم الشيت خاطئ)
+        if (res && res.error) {
+            tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-rose-600 font-black text-sm">خطأ من جوجل: ' + res.error + '</td></tr>';
+            return;
+        }
+        
+        // 2. إذا نجح الجلب وتوجد بيانات
         let logsArray = res.logs || res.data || [];
-        
         if(res && res.success && logsArray.length > 0) {
             tbody.innerHTML = '';
             logsArray.forEach(function(log) {
                 tbody.insertAdjacentHTML('beforeend', `
-                    <tr class="hover:bg-slate-50 transition">
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-3 text-slate-500 font-bold dir-ltr text-right">${log.date || '-'}</td>
                         <td class="p-3 text-[#D4A017] font-black">${log.session || '-'}</td>
                         <td class="p-3 text-[#0B1F4D] font-bold">${log.page || '-'}</td>
@@ -2246,11 +2250,12 @@ async function loadVisitorLogs() {
                 `);
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">لا توجد زيارات مسجلة حتى الآن</td></tr>';
+            // 3. إذا نجح الجلب لكن الشيت فارغ تماماً
+            tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400 font-bold">لا توجد زيارات مسجلة حتى الآن</td></tr>';
         }
     } catch(e) {
-        console.error("خطأ في جلب السجل:", e);
-        tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-rose-500">خطأ في الاتصال بسيرفر التتبع</td></tr>';
+        // 4. إذا فشل الاتصال بالإنترنت أو الرابط خاطئ
+        tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-rose-600 font-black">خطأ في الاتصال: ' + e.message + '</td></tr>';
     }
 }
 // ==========================================
