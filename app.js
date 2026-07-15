@@ -606,15 +606,13 @@ function renderVerificationResult(result) {
 function openLoginModal() { 
     let loginModal = document.getElementById('loginModal');
     if (loginModal) {
-        loginModal.classList.remove('hidden'); // إزالة الإخفاء
-        loginModal.classList.add('flex');      // إضافة الظهور ليتم عرضها بشكل صحيح
+        loginModal.style.display = 'flex'; // أفضل من classList
     }
 }
 function closeLoginModal() { 
     let loginModal = document.getElementById('loginModal');
     if (loginModal) {
-        loginModal.classList.add('hidden');    // إعادة الإخفاء
-        loginModal.classList.remove('flex');   // إزالة الظهور حتى لا تبقى عالقة كشاشة شفافة
+        loginModal.style.display = 'none';
     }
 }
 async function handleLoginSubmit(e) {
