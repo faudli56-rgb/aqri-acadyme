@@ -2309,7 +2309,7 @@ async function loadVisitorLogs() {
     }
 }
 // ==========================================
-// نظام القاعة الافتراضية (نسخة الإدارة والمساعدين وتسجيل الفيديو)
+// نظام القاعة الافتراضية (مصصح وموثوق)
 // ==========================================
 var jitsiApi = null;
 
@@ -2318,42 +2318,34 @@ function openVirtualRoom(courseName) {
     var container = document.getElementById('jitsi-container');
     var loader = document.getElementById('room-loader');
     
+    // تنظيف القاعة القديمة وإظهار اللودر
     if (jitsiApi) jitsiApi.dispose();
+    if (loader) loader.style.display = 'flex';
     setTimeout(function() { if(loader) loader.style.display = 'none'; }, 2000);
 
-    // 1. تحديد هوية وصلاحيات الداخل للقاعة
     var userRole = sessionStorage.getItem('role') || 'student';
     var userName = sessionStorage.getItem('name') || 'متدرب - ' + Math.floor(Math.random() * 1000);
-    
-    // هل المستخدم مدير، مدرب، أو مساعد (مسوق)؟ 
-    var isModerator = (userRole === 'admin' || userRole === 'trainer' || userRole === 'marketer' || userRole === 'assistant');
+    var isModerator = (userRole === 'admin' || userRole === 'trainer' || userRole === 'marketer');
 
     var domain = 'meet.jit.si';
     var options = {
-        roomName: 'IqraAcademy_Live_' + courseName.replace(/\s+/g, '_'),
+        // 🔴 التعديل السحري هنا: اسم قاعة ثابت بالإنجليزية لتجنب أخطاء السيرفر
+        roomName: 'IqraAcademy_Live_Main_Room_2026', 
         width: '100%',
         height: '100%',
         parentNode: container,
         userInfo: {
-            // تمييز الإدارة والمساعدين بتاج 👑 في قائمة الحضور
             displayName: (isModerator ? '👑 ' : '') + userName
         },
         configOverwrite: {
-            startWithAudioMuted: true, // دخول صامت
-            startWithVideoMuted: true, // كاميرا مغلقة
+            startWithAudioMuted: true, 
+            startWithVideoMuted: true, 
             prejoinPageEnabled: false,
-            disableReactions: false,   // تفعيل التفاعلات (رفع اليد، القلوب)
-            
-            // تفعيل التسجيل المحلي (للمدير والمساعدين)
-            localRecording: {
-                enabled: true,
-                format: 'mp4' // أو ogg حسب المتصفح
-            }
+            disableReactions: false,
+            localRecording: { enabled: true, format: 'mp4' }
         },
         interfaceConfigOverwrite: {
             SHOW_JITSI_WATERMARK: false,
-            DEFAULT_LOGO_URL: 'https://drive.google.com/thumbnail?id=1vcLrgWhcDhA5vOlei4WasRYKzU5YJ6qh&sz=w500',
-            // الأزرار الأساسية التي تظهر للجميع
             TOOLBAR_BUTTONS: [
                 'microphone', 'camera', 'desktop', 'fullscreen',
                 'fodeviceselection', 'hangup', 'profile', 'chat', 'settings', 'raisehand',
@@ -2362,19 +2354,16 @@ function openVirtualRoom(courseName) {
         }
     };
 
-    // 2. توزيع الصلاحيات والأزرار السرية للإدارة والمساعدين فقط
     if (isModerator) {
-        // إضافة زر (كتم الجميع، تسجيل المحاضرة، الأمان)
         options.interfaceConfigOverwrite.TOOLBAR_BUTTONS.push('mute-everyone', 'security', 'recording', 'localrecording');
     } else {
-        // إذا كان طالباً عادياً، نمنعه من طرد أو كتم الآخرين برمجياً
         options.configOverwrite.remoteVideoMenu = { disableKick: true };
         options.configOverwrite.disableRemoteMute = true;
     }
 
+    // بناء القاعة
     jitsiApi = new JitsiMeetExternalAPI(domain, options);
 
-    // 3. نظام تتبع الحضور (عند إغلاق الخط)
     jitsiApi.addListener('videoConferenceLeft', function() {
         closeVirtualRoom();
         if (!isModerator) {
