@@ -131,7 +131,7 @@
                 <a id="btn-news" onclick="navigateTo('news')" class="cursor-pointer hover:text-[#D4A017] pb-1">الأخبار</a>
                 <a id="btn-verification" onclick="navigateTo('verification')" class="cursor-pointer hover:text-[#D4A017] pb-1">فحص الشهادات</a>
                 <a onclick="openVirtualRoom('القاعة العامة للأكاديمية')" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl font-bold transition shadow-md cursor-pointer flex items-center gap-1">
-    <i class="fas fa-video"></i> بث مباشر
+    <i class="fas fa-video"></i> قاعة التدريب
 </a>
                 <!-- زر الجولة التعليمية -->
                 <a onclick="startOnboardingTour()" class="cursor-pointer text-emerald-400 hover:text-emerald-500 font-bold pb-1"><i class="fas fa-magic ml-1"></i> جولة بالموقع</a>
@@ -156,7 +156,7 @@
             <a id="btn-verification-mob" onclick="navigateTo('verification'); toggleMobileMenu()" class="block text-slate-200 hover:text-[#D4A017] py-2 border-b border-slate-800/40 font-semibold cursor-pointer"><i class="fas fa-award ml-3 text-[#D4A017]"></i>فحص الشهادات</a>
             <a onclick="startOnboardingTour(); toggleMobileMenu()" class="block hover:text-[#D4A017] cursor-pointer transition text-emerald-400 font-bold py-2 border-b border-slate-800/40"><i class="fas fa-info-circle ml-3"></i> جولة تعليمية بالموقع</a>
           <a onclick="openVirtualRoom('القاعة العامة للأكاديمية'); toggleMobileMenu()" class="block bg-rose-500 text-center text-white font-black py-3 rounded-xl shadow-lg mt-4 cursor-pointer flex justify-center items-center gap-2">
-    <i class="fas fa-video"></i> البث المباشر للقاعة
+    <i class="fas fa-video"></i> قاعة التدريب
 </a>
             <a onclick="navigateTo('contact'); toggleMobileMenu()" class="block text-slate-200 hover:text-[#D4A017] py-2 border-b border-slate-800/40 font-semibold cursor-pointer"><i class="fas fa-envelope ml-3 text-[#D4A017]"></i>تواصل معنا</a>
             <a onclick="openLoginModal(); toggleMobileMenu()" class="block text-emerald-400 font-bold py-2 cursor-pointer border-b border-slate-800/40"><i class="fas fa-sign-in-alt ml-3 text-emerald-500"></i>دخول النظام</a>
@@ -756,6 +756,22 @@
                     <div class="absolute top-0 right-0 w-full h-1 bg-gradient-to-l from-[#0B1F4D] to-[#D4A017]"></div>
                     <h2 class="font-black text-[#0B1F4D] mb-8 text-xl"><i class="fas fa-sliders-h ml-2 text-[#D4A017]"></i>لوحة التحكم العامة للمنصة</h2>
                     <form id="form-settings" class="space-y-5">
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200/60 mb-6 text-right shadow-inner">
+    <h3 class="font-black text-[#0B1F4D] text-sm mb-2 flex items-center gap-2">
+        <i class="fas fa-video text-rose-500"></i> التحكم الراداري في القاعة الافتراضية
+    </h3>
+    <p class="text-[11px] text-slate-500 font-bold mb-4">
+        تستطيع حظر أو السماح للطلاب بدخول قاعة المحاضرات الحية لمنع التواجد العبثي خارج أوقات التدريب المعتمدة.
+    </p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button type="button" onclick="changeLiveRoomStatus('مفتوحة')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fas fa-lock-open"></i> تفعيل وإتاحة دخول الطلاب الآن
+        </button>
+        <button type="button" onclick="changeLiveRoomStatus('مغلقة')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fas fa-lock"></i> إغلاق القاعة وحظر المتصفحين فوراً
+        </button>
+    </div>
+</div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 mb-1.5 ml-1">اسم الأكاديمية الرسمي</label>
