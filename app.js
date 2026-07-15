@@ -2314,28 +2314,29 @@ async function loadVisitorLogs() {
 var jitsiApi = null;
 
 function openVirtualRoom(courseName) {
-    // 1. التوجيه لصفحة القاعة وإظهار اللودر
     navigateTo('live-room'); 
     var container = document.getElementById('jitsi-container');
     var loader = document.getElementById('room-loader');
     
-    // 2. تنظيف القاعة القديمة وتفريغ الحاوية تماماً
     if (jitsiApi) {
         jitsiApi.dispose();
         jitsiApi = null;
     }
     
-    // إزالة أي إطارات iframe متبقية قد تسبب تعارض
     Array.from(container.children).forEach(child => {
         if (child.id !== 'room-loader') child.remove();
     });
 
     if (loader) loader.style.display = 'flex';
 
-    // 3. زيادة التأخير قليلاً لضمان اكتمال حركة CSS (FadeIn)
+    // 💡 1. تسجيل وقت دخول الطالب فور الضغط لبناء القاعة
+    var joinTime = new Date().toISOString();
+
     setTimeout(function() {
+        // جلب بيانات الطالب الجاري تصفحه من الجلسة الحالية
         var userRole = sessionStorage.getItem('role') || 'student';
         var userName = sessionStorage.getItem('name') || 'متدرب - ' + Math.floor(Math.random() * 1000);
+        var orderId = sessionStorage.getItem('code') || 'بدون رقم طلب'; // أو المعرف الخاص به
         var isModerator = (userRole === 'admin' || userRole === 'trainer' || userRole === 'marketer' || userRole === 'assistant');
 
         var domain = 'meet.jit.si';
@@ -2351,7 +2352,7 @@ function openVirtualRoom(courseName) {
                 startWithAudioMuted: true, 
                 startWithVideoMuted: true, 
                 disableDeepLinking: true, 
-                prejoinPageEnabled: false // تخطي صفحة الانتظار للدخول المباشر
+                prejoinPageEnabled: false 
             },
             interfaceConfigOverwrite: {
                 SHOW_JITSI_WATERMARK: false,
@@ -2370,28 +2371,36 @@ function openVirtualRoom(courseName) {
             options.configOverwrite.disableRemoteMute = true;
         }
 
-        // 4. بناء القاعة
         jitsiApi = new JitsiMeetExternalAPI(domain, options);
 
-        // إخفاء اللودر فوراً بعد نجاح الربط
         if(loader) loader.style.display = 'none';
 
-        // 5. حدث الخروج من القاعة
+        // 💡 2. حدث الخروج المحدث: يرسل البيانات للـ API تلقائياً قبل الإغلاق
         jitsiApi.addListener('videoConferenceLeft', function() {
-            closeVirtualRoom();
-            if (!isModerator && typeof showAttendancePopup === 'function') {
-                showAttendancePopup(courseName);
+            var leaveTime = new Date().toISOString();
+            
+            // نتابع حضور الطلاب فقط لتجنب ملء الجدول ببيانات الإدارة والمدربين
+            if (!isModerator) {
+                // إرسال البيانات للخلفية في السيرفر دون تعطيل المتصفح
+                callAPI('recordAttendance', {
+                    orderId: orderId,
+                    studentName: userName,
+                    course: courseName,
+                    joinTime: joinTime,
+                    leaveTime: leaveTime
+                }).then(function(res) {
+                    if (res && res.success) {
+                        if (typeof showToast === 'function') {
+                            showToast('تم حفظ الحضور والوقت المنقضي في السجل بنجاح! ✅');
+                        }
+                    }
+                }).catch(function(err) {
+                    console.error('خطأ أثناء إرسال بيانات الحضور:', err);
+                });
             }
+
+            closeVirtualRoom();
         });
 
-    }, 800); // 800ms تضمن اكتمال الانتقال الشكلي
-}
-
-// دالة إغلاق القاعة لضمان عدم استهلاك موارد المتصفح
-function closeVirtualRoom() {
-    if (jitsiApi) {
-        jitsiApi.dispose();
-        jitsiApi = null;
-    }
-    navigateTo('home');
+    }, 800); 
 }
