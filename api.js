@@ -15,31 +15,67 @@ const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbx51syLRrRu0JrDhhg
 // الدالة الأساسية للاتصال بالـ API
 // ==========================================
 
-async function callAPI(action, data = {}) {
+async function callAPI(action, data = {}, timeout = 30000) {
+    // 1. إنشاء AbortController لإدارة المهلة
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
     try {
+        // 2. إعداد الطلب مع المهلة
         const response = await fetch(API_BASE_URL, {
             method: 'POST',
-            redirect: 'follow', 
+            redirect: 'follow',
             headers: {
-                'Content-Type': 'text/plain;charset=utf-8',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
             },
-            body: JSON.stringify({ action, data })
+            body: JSON.stringify({ action, data }),
+            signal: controller.signal
         });
         
-        // استلام الرد كنص أولاً لمنع أخطاء الترجمة
+        // 3. إلغاء المهلة بعد الاستجابة
+        clearTimeout(timeoutId);
+        
+        // 4. التحقق من حالة الاستجابة
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // 5. قراءة النص ومن ثم تحويله إلى JSON
         const text = await response.text();
         try {
+            if (!text || text.trim() === '') {
+                throw new Error('استجابة فارغة من السيرفر');
+            }
             return JSON.parse(text);
         } catch (e) {
             console.error('API Parse Error:', text);
             return { 
                 success: false, 
-                message: 'استجابة غير صالحة من السيرفر. قد يحتاج سكريبت جوجل إلى تجديد الصلاحيات.' 
+                message: 'استجابة غير صالحة من السيرفر',
+                rawResponse: text 
             };
         }
         
     } catch (error) {
+        // 6. معالجة الأخطاء المختلفة
+        clearTimeout(timeoutId);
         console.error('API Error:', error);
+        
+        if (error.name === 'AbortError') {
+            return { 
+                success: false, 
+                message: 'انتهت مهلة الاتصال بالخادم. يرجى المحاولة مرة أخرى.' 
+            };
+        }
+        
+        if (error.message.includes('Failed to fetch')) {
+            return { 
+                success: false, 
+                message: 'لا يمكن الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.' 
+            };
+        }
+        
         return { 
             success: false, 
             message: error.message || 'فشل الاتصال بالخادم' 
