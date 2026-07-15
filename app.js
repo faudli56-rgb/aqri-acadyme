@@ -522,7 +522,21 @@ function handleContactSubmit(e) {
     setTimeout(function() { btn.innerText = "إرسال الرسالة الحين"; e.target.reset(); }, 3000);
 }
 
+// ==========================================
+// دوال التواصل وطلب عروض الشركات (B2B)
+// ==========================================
 function requestB2BQuote(offerName, offerType) {
+    // 💡 إضافة كود التتبع: لتسجيل ضغطة الزائر في رادار وإحصائيات المدير
+    var sessionId = sessionStorage.getItem('visitor_session');
+    if (!sessionId) {
+        sessionId = 'زائر-' + Math.floor(Math.random() * 9999);
+        sessionStorage.setItem('visitor_session', sessionId);
+    }
+    if (typeof logVisitorActivity === 'function') {
+        logVisitorActivity('خدمات الشركات (طلب تواصل)', sessionId);
+    }
+    // --------------------------------------------------------
+
     try {
         var message = "";
         
@@ -541,7 +555,6 @@ function requestB2BQuote(offerName, offerType) {
         console.error("خطأ في فتح الواتساب:", e);
     }
 }
-
 // ==========================================
 // دوال التحقق من الشهادات
 // ==========================================
@@ -2220,42 +2233,63 @@ window.addEventListener('beforeunload', function (e) {
     return '';
 });
 // ==========================================
-// جلب سجل الزوار للمدير
+// جلب سجل الزوار للمدير (نظام المصفوفة ✅ ❌)
 // ==========================================
 async function loadVisitorLogs() {
     var tbody = document.getElementById('visitor-logs-tbody');
     if(!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">جاري جلب بيانات التتبع الحية...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-slate-400">جاري مسح الرادار وجلب البيانات...</td></tr>';
     
     try {
         const res = await fetchVisitorLogs();
         
-        // 1. إذا كان هناك خطأ صريح من السيرفر (مثل اسم الشيت خاطئ)
         if (res && res.error) {
-            tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-rose-600 font-black text-sm">خطأ من جوجل: ' + res.error + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-rose-600 font-black text-sm">خطأ: ' + res.error + '</td></tr>';
             return;
         }
         
-        // 2. إذا نجح الجلب وتوجد بيانات
-        let logsArray = res.logs || res.data || [];
-        if(res && res.success && logsArray.length > 0) {
-            tbody.innerHTML = '';
-            logsArray.forEach(function(log) {
-                tbody.insertAdjacentHTML('beforeend', `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="p-3 text-slate-500 font-bold dir-ltr text-right">${log.date || '-'}</td>
-                        <td class="p-3 text-[#D4A017] font-black">${log.session || '-'}</td>
-                        <td class="p-3 text-[#0B1F4D] font-bold">${log.page || '-'}</td>
-                    </tr>
-                `);
-            });
-        } else {
-            // 3. إذا نجح الجلب لكن الشيت فارغ تماماً
-            tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400 font-bold">لا توجد زيارات مسجلة حتى الآن</td></tr>';
+        if(res && res.success) {
+            // 1. تحديث الإحصائيات العددية المستمرة
+            if(document.getElementById('stat-total-visitors')) document.getElementById('stat-total-visitors').innerText = res.stats.totalVisitors || 0;
+            if(document.getElementById('stat-total-b2b')) document.getElementById('stat-total-b2b').innerText = res.stats.b2bRequests || 0;
+            
+            // جلب عدد المسجلين (الدورات) من بطاقة الإحصائيات الرئيسية
+            var totalStudentsCard = document.querySelector('#tab-stats .grid .text-2xl');
+            if(document.getElementById('stat-total-regs') && totalStudentsCard) {
+                 document.getElementById('stat-total-regs').innerText = totalStudentsCard.innerText;
+            }
+
+            // 2. رسم جدول الزوار (الصح والخطأ)
+            let logsArray = res.logs || [];
+            if(logsArray.length > 0) {
+                tbody.innerHTML = '';
+                logsArray.forEach(function(log) {
+                    // دالة ذكية تفحص هل زار الصفحة أم لا وتضع الأيقونة المناسبة
+                    const checkPage = (pageName) => {
+                        let visited = Object.keys(log.pages).some(p => p.includes(pageName));
+                        return visited 
+                            ? '<i class="fas fa-check-circle text-emerald-500 text-lg shadow-sm rounded-full"></i>' 
+                            : '<i class="fas fa-minus text-slate-200"></i>';
+                    };
+
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-50">
+                            <td class="p-3 text-[#D4A017] font-black">${log.session || '-'}</td>
+                            <td class="p-3 text-slate-500 font-bold dir-ltr text-right text-[10px]">${log.lastDate || '-'}</td>
+                            <td class="p-3 text-center bg-slate-50/50">${checkPage('الرئيسية')}</td>
+                            <td class="p-3 text-center">${checkPage('الدورات')}</td>
+                            <td class="p-3 text-center bg-slate-50/50">${checkPage('الشركات')}</td>
+                            <td class="p-3 text-center">${checkPage('الأخبار')}</td>
+                            <td class="p-3 text-center bg-slate-50/50">${checkPage('فحص')}</td>
+                        </tr>
+                    `);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-slate-400 font-bold">الرادار فارغ حالياً</td></tr>';
+            }
         }
     } catch(e) {
-        // 4. إذا فشل الاتصال بالإنترنت أو الرابط خاطئ
-        tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-rose-600 font-black">خطأ في الاتصال: ' + e.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-rose-600 font-black">خطأ في الاتصال</td></tr>';
     }
 }
 // ==========================================
