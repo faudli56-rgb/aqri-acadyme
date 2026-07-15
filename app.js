@@ -2337,12 +2337,13 @@ function openVirtualRoom(courseName) {
         userInfo: {
             displayName: (isModerator ? '👑 ' : '') + userName
         },
-        configOverwrite: {
+       configOverwrite: {
             startWithAudioMuted: true, 
             startWithVideoMuted: true, 
             prejoinPageEnabled: false,
             disableReactions: false,
-            localRecording: { enabled: true, format: 'mp4' }
+            localRecording: { enabled: true, format: 'mp4' },
+            disableDeepLinking: true // 🔴 هذا السطر يجبر القاعة على العمل في متصفح الجوال بدون طلب التطبيق
         },
         interfaceConfigOverwrite: {
             SHOW_JITSI_WATERMARK: false,
