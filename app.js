@@ -1365,14 +1365,51 @@ function openLandingPage(courseTitle) {
 }
 
 function closeLandingPage() {
+    // 1. تهيئة المتغيرات
     var landingContainer = document.getElementById('landing-page-container');
     var mainContent = document.getElementById('main-content');
     var loader = document.getElementById('lp-loader');
+    var errorDisplay = document.getElementById('lp-error-display');
     
-    if(loader) loader.classList.add('hidden');
-    if(landingContainer) landingContainer.classList.add('hidden');
-    if(mainContent) mainContent.style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 2. إخفاء جميع عناصر صفحة الهبوط
+    if(loader) {
+        loader.classList.add('hidden');
+        loader.style.display = 'none';
+    }
+    
+    if(errorDisplay) {
+        errorDisplay.style.display = 'none';
+        errorDisplay.innerHTML = '';
+    }
+    
+    if(landingContainer) {
+        landingContainer.classList.add('hidden');
+        landingContainer.style.display = 'none';
+    }
+    
+    // 3. إظهار المحتوى الرئيسي
+    if(mainContent) {
+        mainContent.style.display = 'block';
+    }
+    
+    // 4. تنظيف أي بيانات مؤقتة
+    sessionStorage.removeItem('current_landing_course');
+    
+    // 5. التمرير لأعلى الصفحة
+    try {
+        window.scrollTo({ 
+            top: 0, 
+            behavior: 'smooth' 
+        });
+    } catch(e) {
+        // في حال تعذر التمرير السلس
+        window.scrollTo(0, 0);
+    }
+    
+    // 6. إعادة تعيين عنوان الصفحة
+    if(document.title && document.title.includes('تفاصيل الدورة')) {
+        document.title = 'أكاديمية اقرأ للاستشارات والتدريب';
+    }
 }
 
 function registerFromLanding() {
