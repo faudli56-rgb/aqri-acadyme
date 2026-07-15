@@ -2313,7 +2313,35 @@ async function loadVisitorLogs() {
 // ==========================================
 var jitsiApi = null;
 
-function openVirtualRoom(courseName) {
+async function openVirtualRoom(courseName) {
+    // جلب بيانات الصلاحيات والاسم من الجلسة
+    var userRole = sessionStorage.getItem('role') || 'student';
+    var userName = sessionStorage.getItem('name') || 'متدرب - ' + Math.floor(Math.random() * 1000);
+    var orderId = sessionStorage.getItem('code') || 'بدون رقم طلب';
+    var isModerator = (userRole === 'admin' || userRole === 'trainer' || userRole === 'marketer' || userRole === 'assistant');
+
+    // 💡 الحماية الذكية: إذا كان المستخدم طالباً أو زائراً، نتحقق أولاً من السيرفر
+    if (!isModerator) {
+        if (typeof showToast === 'function') showToast('جاري التحقق من صلاحية دخول القاعة المباشرة...', false);
+        
+        try {
+            const res = await callAPI('getLiveRoomStatus');
+            if (!res || res.status !== 'مفتوحة') {
+                if (typeof showToast === 'function') {
+                    showToast('✕ القاعة مغلقة حالياً. يرجى الانتظار حتى موعد المحاضرة المعتمد للقبول.', true);
+                } else {
+                    alert('✕ عذراً، القاعة الافتراضية مغلقة حالياً. يتم إتاحتها فقط أثناء أوقات المحاضرات الرسمية.');
+                }
+                return; // إيقاف التشغيل فوراً ومنع فتح واجهة البث
+            }
+        } catch (e) {
+            console.error('خطأ في التحقق من حالة القاعة:', e);
+            alert('تعذر الاتصال بالسيرفر للتحقق من صلاحية الدخول.');
+            return;
+        }
+    }
+
+    // --- بناء وتشغيل القاعة بشكل آمن إذا اجتاز الفحص ---
     navigateTo('live-room'); 
     var container = document.getElementById('jitsi-container');
     var loader = document.getElementById('room-loader');
@@ -2328,17 +2356,9 @@ function openVirtualRoom(courseName) {
     });
 
     if (loader) loader.style.display = 'flex';
-
-    // 💡 1. تسجيل وقت دخول الطالب فور الضغط لبناء القاعة
     var joinTime = new Date().toISOString();
 
     setTimeout(function() {
-        // جلب بيانات الطالب الجاري تصفحه من الجلسة الحالية
-        var userRole = sessionStorage.getItem('role') || 'student';
-        var userName = sessionStorage.getItem('name') || 'متدرب - ' + Math.floor(Math.random() * 1000);
-        var orderId = sessionStorage.getItem('code') || 'بدون رقم طلب'; // أو المعرف الخاص به
-        var isModerator = (userRole === 'admin' || userRole === 'trainer' || userRole === 'marketer' || userRole === 'assistant');
-
         var domain = 'meet.jit.si';
         var options = {
             roomName: 'IqraAcademy_Live_Main_Room_2026', 
@@ -2372,35 +2392,43 @@ function openVirtualRoom(courseName) {
         }
 
         jitsiApi = new JitsiMeetExternalAPI(domain, options);
-
         if(loader) loader.style.display = 'none';
 
-        // 💡 2. حدث الخروج المحدث: يرسل البيانات للـ API تلقائياً قبل الإغلاق
         jitsiApi.addListener('videoConferenceLeft', function() {
             var leaveTime = new Date().toISOString();
-            
-            // نتابع حضور الطلاب فقط لتجنب ملء الجدول ببيانات الإدارة والمدربين
-            if (!isModerator) {
-                // إرسال البيانات للخلفية في السيرفر دون تعطيل المتصفح
+            if (!isModerator && typeof callAPI === 'function') {
                 callAPI('recordAttendance', {
                     orderId: orderId,
                     studentName: userName,
                     course: courseName,
                     joinTime: joinTime,
                     leaveTime: leaveTime
-                }).then(function(res) {
-                    if (res && res.success) {
-                        if (typeof showToast === 'function') {
-                            showToast('تم حفظ الحضور والوقت المنقضي في السجل بنجاح! ✅');
-                        }
-                    }
-                }).catch(function(err) {
-                    console.error('خطأ أثناء إرسال بيانات الحضور:', err);
-                });
+                }).catch(e => console.log(e));
             }
-
             closeVirtualRoom();
         });
-
     }, 800); 
+}
+
+function closeVirtualRoom() {
+    if (jitsiApi) {
+        jitsiApi.dispose();
+        jitsiApi = null;
+    }
+    navigateTo('home');
+}
+
+// 💡 دالة تحكم الإدارة لفتح وإغلاق القاعة
+async function changeLiveRoomStatus(newStatus) {
+    if(!confirm("هل أنت متأكد من تغيير حالة إتاحة القاعة إلى: " + newStatus + "؟")) return;
+    try {
+        const res = await callAPI('toggleLiveRoom', { status: newStatus });
+        if(res && res.success) {
+            alert(newStatus === 'مفتوحة' ? "✅ تم فتح القاعة بنجاح وبإمكان الطلاب الدخول الآن." : "🔒 تم إغلاق القاعة وحظر دخول الطلاب بنجاح.");
+        } else {
+            alert("❌ فشل تحديث السيرفر، يرجى التحقق من الصلاحيات.");
+        }
+    } catch(e) {
+        alert("خطأ في الاتصال بالسيرفر: " + e);
+    }
 }
