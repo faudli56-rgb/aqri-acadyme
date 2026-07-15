@@ -2247,30 +2247,38 @@ async function loadVisitorLogs() {
     tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-slate-400">جاري مسح الرادار وجلب البيانات...</td></tr>';
     
     try {
+        // 1. جلب بيانات الزوار للجدول (الأساسية)
         const res = await fetchVisitorLogs();
         
+        // 2. جلب الإحصائيات الجديدة للمربعات العلوية
+        const statsRes = await callAPI('getAdvancedStats');
+        
+        // تحديث أرقام المربعات الجديدة إذا نجح الاتصال
+        if (statsRes && statsRes.success) {
+            if(document.getElementById('stat-month')) document.getElementById('stat-month').innerText = statsRes.data.thisMonthVisits;
+            if(document.getElementById('stat-year')) document.getElementById('stat-year').innerText = statsRes.data.thisYearVisits;
+        }
+
         if (res && res.error) {
             tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-rose-600 font-black text-sm">خطأ: ' + res.error + '</td></tr>';
             return;
         }
         
         if(res && res.success) {
-            // 1. تحديث الإحصائيات العددية المستمرة
+            // تحديث الإحصائيات العددية المستمرة القديمة
             if(document.getElementById('stat-total-visitors')) document.getElementById('stat-total-visitors').innerText = res.stats.totalVisitors || 0;
             if(document.getElementById('stat-total-b2b')) document.getElementById('stat-total-b2b').innerText = res.stats.b2bRequests || 0;
             
-            // جلب عدد المسجلين (الدورات) من بطاقة الإحصائيات الرئيسية
             var totalStudentsCard = document.querySelector('#tab-stats .grid .text-2xl');
             if(document.getElementById('stat-total-regs') && totalStudentsCard) {
                  document.getElementById('stat-total-regs').innerText = totalStudentsCard.innerText;
             }
 
-            // 2. رسم جدول الزوار (الصح والخطأ)
+            // رسم جدول الزوار (نظام المصفوفة)
             let logsArray = res.logs || [];
             if(logsArray.length > 0) {
                 tbody.innerHTML = '';
                 logsArray.forEach(function(log) {
-                    // دالة ذكية تفحص هل زار الصفحة أم لا وتضع الأيقونة المناسبة
                     const checkPage = (pageName) => {
                         let visited = Object.keys(log.pages).some(p => p.includes(pageName));
                         return visited 
@@ -2298,3 +2306,4 @@ async function loadVisitorLogs() {
         tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-rose-600 font-black">خطأ في الاتصال</td></tr>';
     }
 }
+// ====== ينتهي النسخ هنا ======
