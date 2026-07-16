@@ -2359,7 +2359,7 @@ async function openVirtualRoom(courseName) {
     var joinTime = new Date().toISOString();
 
     setTimeout(function() {
-        var domain = 'meet.jit.si';
+        var domain = 'meet.ffmuc.net';
         var options = {
             roomName: 'IqraAcademy_Live_Main_Room_2026', 
             width: '100%',
@@ -2368,11 +2368,12 @@ async function openVirtualRoom(courseName) {
             userInfo: {
                 displayName: userName + (isModerator ? ' (إدارة)' : '')
             },
-            configOverwrite: {
+           configOverwrite: {
                 startWithAudioMuted: true, 
                 startWithVideoMuted: true, 
                 disableDeepLinking: true, 
-                prejoinPageEnabled: false 
+                // 💡 التعديل هنا: إظهار صفحة الانتظار للمدربين فقط لتسجيل الدخول، وإخفاؤها عن الطلاب
+                prejoinPageEnabled: isModerator ? true : false 
             },
             interfaceConfigOverwrite: {
                 SHOW_JITSI_WATERMARK: false,
