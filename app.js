@@ -2368,12 +2368,11 @@ var domain = 'meet.ffmuc.net';
             userInfo: {
                 displayName: userName + (isModerator ? ' (إدارة)' : '')
             },
-           configOverwrite: {
+          configOverwrite: {
                 startWithAudioMuted: true, 
                 startWithVideoMuted: true, 
                 disableDeepLinking: true, 
-                // 💡 التعديل هنا: إظهار صفحة الانتظار للمدربين فقط لتسجيل الدخول، وإخفاؤها عن الطلاب
-                prejoinPageEnabled: isModerator ? true : false 
+                prejoinPageEnabled: true
             },
             interfaceConfigOverwrite: {
                 SHOW_JITSI_WATERMARK: false,
