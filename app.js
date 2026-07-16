@@ -2359,7 +2359,7 @@ async function openVirtualRoom(courseName) {
     var joinTime = new Date().toISOString();
 
     setTimeout(function() {
-        var domain = 'meet.ffmuc.net';
+var domain = 'meet.ffmuc.net';
         var options = {
             roomName: 'IqraAcademy_Live_Main_Room_2026', 
             width: '100%',
