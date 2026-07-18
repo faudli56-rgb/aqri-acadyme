@@ -7,7 +7,7 @@
 // ==========================================
 // المتغيرات العالمية
 // ==========================================
-
+var currentLiveSession = null; // لتتبع وقت دخول الطالب
 var globalCourses = [];
 var globalAds = [];
 var currentAdIndex = 0;
