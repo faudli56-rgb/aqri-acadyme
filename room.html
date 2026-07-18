@@ -188,9 +188,9 @@
         // ==========================================
         
         let currentUser = {
-            id: sessionStorage.getItem('code') || 'S-' + Math.floor(Math.random() * 10000),
-            name: sessionStorage.getItem('name') || 'متدرب ضيف',
-            role: sessionStorage.getItem('role') || 'student'
+            id: sessionStorage.getItem('code') || localStorage.getItem('userCode') || 'S-' + Math.floor(Math.random() * 10000),
+            name: sessionStorage.getItem('name') || localStorage.getItem('userName') || sessionStorage.getItem('username') || 'متدرب ضيف',
+            role: sessionStorage.getItem('role') || localStorage.getItem('userRole') || 'student'
         };
 
         let isDataSaver = false;
