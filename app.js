@@ -7,7 +7,6 @@
 // ==========================================
 // المتغيرات العالمية
 // ==========================================
-var currentLiveSession = null; // لتتبع وقت دخول الطالب
 var globalCourses = [];
 var globalAds = [];
 var currentAdIndex = 0;
@@ -2310,29 +2309,5 @@ async function loadVisitorLogs() {
         }
     } catch(e) {
         tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-rose-600 font-black">خطأ في الاتصال</td></tr>';
-    }
-}
-// متغير لحفظ بيانات جلسة الطالب الحالية
-var currentLiveSession = null;
-
-// دالة تسجيل الحضور وحساب وقت التواجد
-function recordStudentAttendance() {
-    if (currentLiveSession) {
-        var leaveTime = new Date().toISOString();
-        var sessionData = currentLiveSession;
-        currentLiveSession = null; // تفريغ الجلسة لمنع التكرار
-
-        // إرسال البيانات فوراً إلى جوجل شيت
-        callAPI('recordAttendance', {
-            orderId: sessionData.orderId,
-            studentName: sessionData.studentName,
-            course: sessionData.course,
-            joinTime: sessionData.joinTime,
-            leaveTime: leaveTime
-        }).then(res => {
-            if (res && res.success && typeof showToast === 'function') {
-                showToast('✅ تم تسجيل حضورك وحفظ وقت الانصراف بنجاح.');
-            }
-        }).catch(e => console.log('خطأ في تسجيل الحضور:', e));
     }
 }
