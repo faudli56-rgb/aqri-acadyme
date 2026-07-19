@@ -2294,3 +2294,4 @@ async function loadVisitorLogs() {
 }
 // متغير لحفظ بيانات جلسة الطالب الحالية
 var currentLiveSession = null;
+window.addEventListener('DOMContentLoaded', initializeWebsiteLayout);
