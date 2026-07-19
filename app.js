@@ -114,14 +114,7 @@ function popupActionRegister() {
 }
 
 function navigateTo(pageId) {
-    // --- 1. التحقق من الشاشات المتراكبة التي تمنع التنقل المباشر ---
-    // 💡 التقاط محاولة الخروج من القاعة الافتراضية عبر القائمة
-    var livePage = document.getElementById('page-live-room');
-    if (livePage && livePage.classList.contains('active') && pageId !== 'live-room') {
-        recordStudentAttendance(); // إرسال الحضور
-        var jitsiCont = document.getElementById('jitsi-container');
-        if(jitsiCont) jitsiCont.innerHTML = ''; // إيقاف الفيديو
-    }
+    
     // أ. التحقق من صفحة تفاصيل الدورة (صفحة الهبوط)
     var landingContainer = document.getElementById('landing-page-container');
     if (landingContainer && !landingContainer.classList.contains('hidden')) {
@@ -2230,19 +2223,6 @@ function registerAnotherCourse() {
     // 5. توجيه الطالب فوراً إلى قسم الدورات التدريبية
     navigateTo('courses');
 }
-// ==========================================
-// رسالة التنبيه عند محاولة إغلاق الموقع أو التراجع
-// ==========================================
-window.addEventListener('beforeunload', function (e) {
-    // 💡 تأمين أخير: إذا أغلق الطالب المتصفح فجأة وهو داخل القاعة، يتم تسجيل حضوره فوراً
-    if (currentLiveSession) {
-        recordStudentAttendance();
-    }
-    
-    e.preventDefault();
-    e.returnValue = ''; 
-    return '';
-});
 // ==========================================
 // جلب سجل الزوار للمدير (نظام المصفوفة ✅ ❌)
 // ==========================================
