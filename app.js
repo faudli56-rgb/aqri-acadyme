@@ -837,38 +837,39 @@ async function loadStatsData(role, code, name) {
         const res = await getAdminStats(role, code, name);
         
         if(res && res.success) {
-            // 💡 التعديل هنا: تمت إضافة .font-black لاستهداف مكان الرقم فقط وترك الأيقونات
-            var statsEls = document.querySelectorAll('#tab-stats .grid .text-2xl.font-black');
+            // التحديث الجديد: استهداف الأرقام مباشرة عبر المعرفات (IDs) لعدم تدمير الأيقونات
             
-            for(var i=0; i<statsEls.length; i++) {
-                var el = statsEls[i];
-                var parentContent = el.parentNode.parentNode.innerHTML + el.parentNode.innerHTML;
-                
-                if (parentContent.includes('إجمالي المتدربين')) {
-                    el.innerText = res.studentsCount;
-                } else if (parentContent.includes('الشهادات الصادرة')) {
-                    el.innerText = res.certsCount;
-                } else if (parentContent.includes('المسوقين النشطين')) {
-                    if (res.userType === 'admin') {
-                        el.innerHTML = '<select class="w-full text-center bg-transparent border-0 focus:ring-0 cursor-pointer" style="font-size:16px; outline:none; appearance:none;">' +
-                                       '<option value="">العدد: ' + res.marketersCount + ' 🔽</option>' + 
-                                       res.marketersOptions + 
-                                       '</select>';
-                    } else {
-                        el.innerText = "-";
-                    }
-                } else if (parentContent.includes('الإيرادات')) {
-                    if (res.userType === 'admin') {
-                        el.innerHTML = '<select class="w-full text-center bg-transparent border-0 focus:ring-0 cursor-pointer text-green-700 font-bold" style="font-size:16px; outline:none; appearance:none;">' +
-                                       '<option value="">الإجمالي: ' + res.totalRevenueStr + ' 🔽</option>' + 
-                                       res.revenueOptions + 
-                                       '</select>';
-                    } else {
-                        el.innerText = res.personalRevenue;
-                    }
+            let studentsEl = document.getElementById('admin-stat-students');
+            if (studentsEl) studentsEl.innerText = res.studentsCount;
+            
+            let certsEl = document.getElementById('admin-stat-certs');
+            if (certsEl) certsEl.innerText = res.certsCount;
+            
+            let marketersEl = document.getElementById('admin-stat-marketers');
+            if (marketersEl) {
+                if (res.userType === 'admin') {
+                    marketersEl.innerHTML = '<select class="w-full text-center bg-transparent border-0 focus:ring-0 cursor-pointer" style="font-size:16px; outline:none; appearance:none;">' +
+                                   '<option value="">العدد: ' + res.marketersCount + ' 🔽</option>' + 
+                                   res.marketersOptions + 
+                                   '</select>';
+                } else {
+                    marketersEl.innerText = "-";
+                }
+            }
+            
+            let revenueEl = document.getElementById('admin-stat-revenue');
+            if (revenueEl) {
+                if (res.userType === 'admin') {
+                    revenueEl.innerHTML = '<select class="w-full text-center bg-transparent border-0 focus:ring-0 cursor-pointer text-green-700 font-bold" style="font-size:16px; outline:none; appearance:none;">' +
+                                   '<option value="">الإجمالي: ' + res.totalRevenueStr + ' 🔽</option>' + 
+                                   res.revenueOptions + 
+                                   '</select>';
+                } else {
+                    revenueEl.innerText = res.personalRevenue;
                 }
             }
 
+            // شريط التقدم الخاص بالمسوق يبقى كما هو بدون تغيير
             if (res.userType === 'marketer' && res.nextTierInfo) {
                 var statsContainer = document.querySelector('#tab-stats .grid');
                 if (statsContainer) {
