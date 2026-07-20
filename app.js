@@ -838,47 +838,53 @@ async function loadDashboardData(role, code, name) {
 async function loadStatsData(role, code, name) {
     try {
         const res = await getAdminStats(role, code, name);
-        
-        if (res && res.success) {
-            // 1. نستهدف شبكة الإحصائيات الخاصة بلوحة الإدارة فقط
-            var statsContainer = document.querySelector('#tab-stats .grid');
-            if (statsContainer) {
-                // 2. نبحث فقط عن العناصر التي تحتوي على الأرقام (تتميز بكلاس font-black مع text-2xl)
-                // هذا يضمن أننا لن نلمس الأيقونات أبداً
-                var numberDivs = statsContainer.querySelectorAll('.text-2xl.font-black');
+        if(res && res.success) {
+            // استهداف مباشر وصريح لكل مربع إحصائيات لمنع تداخل الأرقام مع الأيقونات
+            var statsCards = document.querySelectorAll('#tab-stats .grid > div');
+            
+            if (statsCards.length >= 4) {
+                // المربع الأول: إجمالي المتدربين
+                var studentsNumber = statsCards[0].querySelector('.text-2xl.font-black');
+                if (studentsNumber) studentsNumber.innerText = res.studentsCount;
                 
-                // يجب أن تكون 4 مربعات بالضبط
-                if (numberDivs.length >= 4) {
-                    // المربع الأول: إجمالي المتدربين
-                    numberDivs[0].innerText = res.studentsCount;
-                    
-                    // المربع الثاني: الشهادات الصادرة
-                    numberDivs[1].innerText = res.certsCount;
-                    
-                    // المربع الثالث: المسوقين النشطين
+                // المربع الثاني: الشهادات الصادرة
+                var certsNumber = statsCards[1].querySelector('.text-2xl.font-black');
+                if (certsNumber) certsNumber.innerText = res.certsCount;
+                
+                // المربع الثالث: المسوقين النشطين
+                var marketersNumber = statsCards[2].querySelector('.text-2xl.font-black');
+                if (marketersNumber) {
                     if (res.userType === 'admin') {
-                        numberDivs[2].innerHTML = '<select class="w-full text-center bg-transparent border-0 focus:ring-0 cursor-pointer" style="font-size:16px; outline:none; appearance:none;"><option value="">العدد: ' + res.marketersCount + ' 🔽</option>' + res.marketersOptions + '</select>';
+                        marketersNumber.innerHTML = '<select class="w-full text-center bg-transparent border-0 focus:ring-0 cursor-pointer" style="font-size:16px; outline:none; appearance:none;">' +
+                                       '<option value="">العدد: ' + res.marketersCount + ' 🔽</option>' + 
+                                       res.marketersOptions + 
+                                       '</select>';
                     } else {
-                        numberDivs[2].innerText = "-";
+                        marketersNumber.innerText = "-";
                     }
-                    
-                    // المربع الرابع: الإيرادات
+                }
+                
+                // المربع الرابع: الإيرادات
+                var revenueNumber = statsCards[3].querySelector('.text-2xl.font-black');
+                if (revenueNumber) {
                     if (res.userType === 'admin') {
-                        numberDivs[3].innerHTML = '<select class="w-full text-center bg-transparent border-0 focus:ring-0 cursor-pointer text-green-700 font-bold" style="font-size:16px; outline:none; appearance:none;"><option value="">الإجمالي: ' + res.totalRevenueStr + ' 🔽</option>' + res.revenueOptions + '</select>';
+                        revenueNumber.innerHTML = '<select class="w-full text-center bg-transparent border-0 focus:ring-0 cursor-pointer text-green-700 font-bold" style="font-size:16px; outline:none; appearance:none;">' +
+                                       '<option value="">الإجمالي: ' + res.totalRevenueStr + ' 🔽</option>' + 
+                                       res.revenueOptions + 
+                                       '</select>';
                     } else {
-                        numberDivs[3].innerText = res.personalRevenue;
+                        revenueNumber.innerText = res.personalRevenue;
                     }
                 }
             }
 
-            // --- كود نظام المسوق وشريط التقدم (متروك كما هو تماماً لضمان عدم تعطله) ---
+            // كود شريط تقدم المسوق (كما هو بالملف الأصلي تماماً لضمان عمله)
             if (res.userType === 'marketer' && res.nextTierInfo) {
-                var statsContainerMarketer = document.querySelector('#tab-stats .grid');
-                if (statsContainerMarketer) {
+                var statsContainer = document.querySelector('#tab-stats .grid');
+                if (statsContainer) {
                     var existingProgress = document.getElementById('marketer-progress-bar');
                     var progressPercent = Math.min(100, (res.studentsCount / 200) * 100);
                     var barColor = '#facc15';
-                    
                     if (progressPercent >= 30) {
                         barColor = '#16a34a';
                     } else if (progressPercent >= 25) {
@@ -912,21 +918,21 @@ async function loadStatsData(role, code, name) {
                                 </div>
                             </div>
                         `;
-                        statsContainerMarketer.insertAdjacentHTML('beforeend', progressHTML);
+                        statsContainer.insertAdjacentHTML('beforeend', progressHTML);
                     } else {
                         var fill = document.getElementById('progress-fill');
                         if (fill) {
                             fill.style.width = progressPercent + '%';
                             fill.style.background = 'linear-gradient(90deg, #86efac, ' + barColor + ')';
                         }
-                        // تحديث النصوص بسلاسة
-                        var spans = existingProgress.querySelectorAll('.text-emerald-600');
-                        for (var s = 0; s < spans.length; s++) {
-                            if (spans[s].innerText.includes('المتبقي') || spans[s].innerText.includes('%')) {
-                                spans[s].innerText = res.nextTierInfo;
-                            } else if (spans[s].innerText.includes('طالب مسجل')) {
-                                spans[s].innerText = '✅ ' + res.studentsCount + ' طالب مسجل';
-                            }
+                        var infoSpan = existingProgress.querySelector('.text-emerald-600');
+                        if (infoSpan && infoSpan.innerText.includes('المتبقي')) {
+                            var newInfoSpan = existingProgress.querySelector('.text-emerald-600');
+                            if (newInfoSpan) newInfoSpan.innerText = res.nextTierInfo;
+                        }
+                        var countSpan = existingProgress.querySelector('.text-emerald-600');
+                        if (countSpan && countSpan.innerText.includes('طالب مسجل')) {
+                            countSpan.innerText = '✅ ' + res.studentsCount + ' طالب مسجل';
                         }
                     }
                 }
