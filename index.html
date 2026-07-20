@@ -596,15 +596,51 @@
                         <h3 class="font-black text-sm lg:text-lg" id="mk-course-title">اختر دورة</h3>
                     </div>
                     
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <div class="bg-white p-4 rounded-xl border border-slate-100 text-center"><div class="text-[10px] text-slate-400 mb-1">مسجلين</div><div class="font-black text-[#0B1F4D] text-xl" id="mk-c-enrolled">0</div></div>
-                        <div class="bg-white p-4 rounded-xl border border-slate-100 text-center"><div class="text-[10px] text-slate-400 mb-1">مسددين</div><div class="font-black text-emerald-600 text-xl" id="mk-c-paid">0</div></div>
-                        <div class="bg-white p-4 rounded-xl border border-slate-100 text-center"><div class="text-[10px] text-slate-400 mb-1">أرباح الدورة</div><div class="font-black text-[#D4A017] text-xl" id="mk-c-earnings">0$</div></div>
-                       <div class="bg-white p-4 rounded-xl border border-slate-100 text-center flex flex-col justify-center h-full">
-    <div class="text-[11px] text-slate-600 font-black mb-0.5">أرباحك المحتملة 🎯</div>
-    <div class="text-[8px] text-rose-500 font-bold leading-tight mb-1.5">(تُضاف لرصيدك فور سداد الطلاب، حفّزهم الآن!)</div>
-    <div class="font-black text-rose-600 text-xl" id="mk-c-pending">0$</div>
-</div>
+                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <!-- مربع مسجلين -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition text-right">
+                            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl border border-blue-100 shrink-0">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-500 font-bold mb-1">مسجلين</div>
+                                <div class="text-2xl font-black text-[#0B1F4D]" id="mk-c-enrolled">0</div>
+                            </div>
+                        </div>
+
+                        <!-- مربع مسددين -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition text-right">
+                            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl border border-emerald-100 shrink-0">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-500 font-bold mb-1">مسددين</div>
+                                <div class="text-2xl font-black text-emerald-600" id="mk-c-paid">0</div>
+                            </div>
+                        </div>
+
+                        <!-- مربع أرباح الدورة -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition text-right">
+                            <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl border border-amber-100 shrink-0">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-500 font-bold mb-1">أرباح الدورة</div>
+                                <div class="text-2xl font-black text-[#D4A017]" id="mk-c-earnings">0$</div>
+                            </div>
+                        </div>
+
+                        <!-- مربع أرباحك المحتملة -->
+                        <div class="bg-rose-50 p-5 rounded-2xl shadow-sm border border-rose-200 flex items-center gap-4 hover:shadow-md transition text-right">
+                            <div class="w-14 h-14 bg-white text-rose-500 rounded-2xl flex items-center justify-center text-2xl border border-rose-100 shrink-0">
+                                <i class="fas fa-bullseye"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-600 font-black mb-1">أرباحك المحتملة</div>
+                                <div class="font-black text-rose-600 text-xl" id="mk-c-pending">0$</div>
+                                <div class="text-[10px] text-rose-500 font-bold mt-1">(تُضاف فور سداد الطلاب)</div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- شريط التقدم -->
