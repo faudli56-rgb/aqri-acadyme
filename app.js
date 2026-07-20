@@ -832,16 +832,13 @@ async function loadDashboardData(role, code, name) {
         console.error('خطأ في جلب بيانات الجدول:', e);
     }
 }
-// ==========================================
-// دوال الإحصائيات
-// ==========================================
-
 async function loadStatsData(role, code, name) {
     try {
         const res = await getAdminStats(role, code, name);
         
         if(res && res.success) {
-            var statsEls = document.querySelectorAll('#tab-stats .grid .text-2xl');
+            // 💡 التعديل هنا: تمت إضافة .font-black لاستهداف مكان الرقم فقط وترك الأيقونات
+            var statsEls = document.querySelectorAll('#tab-stats .grid .text-2xl.font-black');
             
             for(var i=0; i<statsEls.length; i++) {
                 var el = statsEls[i];
@@ -940,7 +937,6 @@ async function loadStatsData(role, code, name) {
         console.error('خطأ في جلب الإحصائيات:', e);
     }
 }
-
 function switchAdminTab(tabId, btnElement) {
     var contents = document.getElementsByClassName('admin-tab-content');
     for (var i = 0; i < contents.length; i++) {
