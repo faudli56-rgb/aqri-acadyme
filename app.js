@@ -582,7 +582,8 @@ async function runCertificateVerification() {
 function renderVerificationResult(result) {
     var resBox = document.getElementById('cert-result-box');
     resBox.classList.remove('hidden');
-   if(result.found) {
+    
+    if(result.found) {
         resBox.className = "mt-8 p-6 rounded-2xl border bg-emerald-50/70 border-emerald-200 text-right space-y-3 text-xs text-slate-700 shadow-sm";
         resBox.innerHTML = `
         <div class="flex flex-col gap-4">
@@ -594,7 +595,11 @@ function renderVerificationResult(result) {
                 <div class="pt-2"><a href="${result.pdfUrl}" target="_blank" class="inline-block bg-[#0B1F4D] hover:bg-[#132F6B] text-white px-5 py-2 rounded-xl font-bold shadow">تحميل الشهادة pdf</a></div>
             </div>
         </div>`;
+    } else {
+        resBox.className = "mt-8 p-6 rounded-2xl border bg-rose-50 border-rose-200 text-right text-xs shadow-sm text-slate-700 leading-relaxed";
+        resBox.innerHTML = `<div class="text-rose-700 font-extrabold text-sm mb-2">✕ حظر التحقق الإلكتروني</div><p class="font-semibold text-slate-600">عذراً، لم نجد قيد رسمي يطابق هذا الرقم.</p>`;
     }
+}
 
 // ==========================================
 // دوال نظام الدخول والصلاحيات
