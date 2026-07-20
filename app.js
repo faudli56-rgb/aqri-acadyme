@@ -582,25 +582,19 @@ async function runCertificateVerification() {
 function renderVerificationResult(result) {
     var resBox = document.getElementById('cert-result-box');
     resBox.classList.remove('hidden');
-    if(result.found) {
-        var qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(window.location.href + "?cert=" + result.id);
+   if(result.found) {
         resBox.className = "mt-8 p-6 rounded-2xl border bg-emerald-50/70 border-emerald-200 text-right space-y-3 text-xs text-slate-700 shadow-sm";
         resBox.innerHTML = `
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="space-y-2 flex-1">
-                <div class="text-emerald-700 font-black text-sm mb-2 flex items-center gap-1">الشهادة معتمدة وصحيحة ✅</div>
+        <div class="flex flex-col gap-4">
+            <div class="space-y-2">
+                <div class="text-emerald-700 font-black text-sm mb-2 flex items-center gap-1">الشهادة موثقة ومسجلة رسمياً في النظام ✅</div>
                 <p><strong class="text-[#0B1F4D]">اسم المتدرب:</strong> ${result.studentAr}</p>
                 <p><strong class="text-[#0B1F4D]">البرنامج:</strong> ${result.course}</p>
                 <p><strong class="text-[#0B1F4D]">تاريخ الإصدار:</strong> ${result.date}</p>
                 <div class="pt-2"><a href="${result.pdfUrl}" target="_blank" class="inline-block bg-[#0B1F4D] hover:bg-[#132F6B] text-white px-5 py-2 rounded-xl font-bold shadow">تحميل الشهادة pdf</a></div>
             </div>
-            <div class="bg-white p-2 rounded-xl shadow border border-emerald-100"><img src="${qrUrl}" alt="QR" class="w-24 h-24 mx-auto"></div>
         </div>`;
-    } else {
-        resBox.className = "mt-8 p-6 rounded-2xl border bg-rose-50 border-rose-200 text-right text-xs shadow-sm text-slate-700 leading-relaxed";
-        resBox.innerHTML = `<div class="text-rose-700 font-extrabold text-sm mb-2">✕ حظر التحقق الإلكتروني</div><p class="font-semibold text-slate-600">عذراً، لم نجد قيد رسمي يطابق هذا الرقم.</p>`;
     }
-}
 
 // ==========================================
 // دوال نظام الدخول والصلاحيات
