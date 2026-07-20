@@ -2375,9 +2375,10 @@ function switchMarketerTab(tabId) {
         activeBtn.classList.add('bg-[#0B1F4D]', 'text-white', 'shadow');
     }
     
-    if(tabId === 'withdrawals') {
+   if(tabId === 'withdrawals') {
         loadWithdrawalsHistory();
     }
+    if (window.FontAwesome) { window.FontAwesome.dom.i2svg(); }
 }
 
 async function loadMarketerDashboard() {
@@ -2474,6 +2475,7 @@ function loadSpecificCourseData(courseName) {
             </tr>
         `;
     });
+    if (window.FontAwesome) { window.FontAwesome.dom.i2svg(); }
 }
 async function requestWithdrawal() {
     // تنظيف النص من رمز العملة لاستخراج الرقم الصافي
@@ -2542,5 +2544,6 @@ async function loadWithdrawalsHistory() {
         });
 
         document.getElementById('mk-total-withdrawn').innerText = totalWithdrawn + ' ر.ي';
+        if (window.FontAwesome) { window.FontAwesome.dom.i2svg(); }
     }
 }
