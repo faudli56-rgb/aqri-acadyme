@@ -538,28 +538,58 @@
                 <!-- تبويب الرئيسية -->
                 <div id="mk-home-tab" class="mk-content-section block">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 text-right hover:shadow-md transition">
-                            <div class="text-[10px] text-slate-400 font-bold mb-1">إجمالي الطلاب</div>
-                            <div class="text-2xl font-black text-[#0B1F4D]" id="mk-total-students">0</div>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 text-right hover:shadow-md transition">
-                            <div class="text-[10px] text-slate-400 font-bold mb-1">نسبة العمولة الحالية</div>
-                            <div class="text-2xl font-black text-emerald-600" id="mk-current-tier">%20</div>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 text-right hover:shadow-md transition">
-                            <div class="text-[10px] text-slate-400 font-bold mb-1">إجمالي الأرباح منذ البداية</div>
-                            <div class="text-2xl font-black text-[#D4A017]" id="mk-total-earnings">0$</div>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border-rose-200 bg-rose-50 text-right flex flex-col justify-between hover:shadow-md transition">
-                            <div>
-                                <div class="text-[10px] text-rose-500 font-bold mb-1">الرصيد المتاح للسحب</div>
-                                <div class="text-2xl font-black text-rose-600" id="mk-available-balance">0$</div>
+                        
+                        <!-- مربع إجمالي الطلاب -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition text-right">
+                            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl border border-blue-100 shrink-0">
+                                <i class="fas fa-users"></i>
                             </div>
-                            <button onclick="requestWithdrawal()" class="mt-2 w-full bg-rose-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-rose-700 transition shadow">طلب سحب الأرباح</button>
+                            <div>
+                                <div class="text-[10px] text-slate-400 font-bold mb-1">إجمالي الطلاب</div>
+                                <div class="text-2xl font-black text-[#0B1F4D]" id="mk-total-students">0</div>
+                            </div>
                         </div>
+
+                        <!-- مربع نسبة العمولة -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition text-right">
+                            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl border border-emerald-100 shrink-0">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-400 font-bold mb-1">نسبة العمولة الحالية</div>
+                                <div class="text-2xl font-black text-emerald-600" id="mk-current-tier">%20</div>
+                            </div>
+                        </div>
+
+                        <!-- مربع الأرباح الكلية -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition text-right">
+                            <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl border border-amber-100 shrink-0">
+                                <i class="fas fa-hand-holding-dollar"></i>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-400 font-bold mb-1">إجمالي الأرباح منذ البداية</div>
+                                <div class="text-2xl font-black text-[#D4A017]" id="mk-total-earnings">0$</div>
+                            </div>
+                        </div>
+
+                        <!-- مربع الرصيد المتاح للسحب -->
+                        <div class="bg-rose-50 p-5 rounded-2xl shadow-sm border border-rose-200 flex flex-col justify-between hover:shadow-md transition text-right">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-white text-rose-500 rounded-2xl flex items-center justify-center text-2xl border border-rose-100 shrink-0">
+                                    <i class="fas fa-wallet"></i>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-rose-500 font-bold mb-1">الرصيد المتاح للسحب</div>
+                                    <div class="text-2xl font-black text-rose-600" id="mk-available-balance">0$</div>
+                                </div>
+                            </div>
+                            <button onclick="requestWithdrawal()" class="mt-3 w-full bg-rose-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-rose-700 transition shadow flex justify-center items-center gap-2">
+                                طلب سحب الأرباح <i class="fas fa-arrow-left"></i>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
-
                 <!-- تبويب الدورة -->
                 <div id="mk-course-tab" class="mk-content-section hidden">
                     <div class="bg-[#0B1F4D] text-white p-5 rounded-2xl mb-6 flex justify-between items-center shadow-md">
