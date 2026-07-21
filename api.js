@@ -257,6 +257,9 @@ function logVisitorActivity(pageName) {
     sessionStorage.setItem(cacheKey, 'true');
     callAPI('logVisit', { pageName: pageName, sessionId: sessionId }).catch(e => console.log(e));
 }
+async function fetchVisitorLogs() {
+    return await callAPI('fetchVisitorLogs');
+}
 // ==========================================
 // 13. دوال لوحة المسوق الجديدة وسجل السحوبات
 // ==========================================
