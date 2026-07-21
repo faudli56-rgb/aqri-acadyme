@@ -86,6 +86,7 @@ function initializeWebsiteLayout() {
     } catch(e) {
         // تجاهل ظهور النافذة في حالة الحظر لضمان استمرار عمل الموقع
     }
+    }
 function toggleMobileMenu() {
     var menu = document.getElementById('mobile-menu');
     var icon = document.getElementById('menu-toggle-icon');
