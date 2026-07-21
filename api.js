@@ -50,38 +50,12 @@ async function callAPI(action, data = {}) {
             return { success: false, message: 'استجابة غير صالحة من السيرفر.' };
         }
         
-    // 👇 الجزء الذي كان ناقصاً في الكود الخاص بك
     } catch (error) {
         console.error('API Error:', error);
         return { success: false, message: error.message || 'فشل الاتصال بالخادم' };
     }
 }
-// ==========================================
-// 1. دوال المصادقة (هذه الدالة التي انحذفت بالخطأ)
-// ==========================================
-async function authenticateUser(username, password) {
-    return await callAPI('authenticateUser', { username, password });
-}            
-            return json;
-        } catch (e) {
-            console.error('API Parse Error:', text);
-            return { success: false, message: 'استجابة غير صالحة من السيرفر.' };
-        }
-        
-    } catch (error) {
-        console.error('API Error:', error);
-        return { success: false, message: error.message || 'فشل الاتصال بالخادم' };
-    }
-}
-        
-    } catch (error) {
-        console.error('API Error:', error);
-        return { 
-            success: false, 
-            message: error.message || 'فشل الاتصال بالخادم' 
-        };
-    }
-}
+
 // ==========================================
 // 1. دوال المصادقة
 // ==========================================
@@ -261,6 +235,7 @@ async function uploadImage(base64Data, fileName) {
 async function uploadReceipt(base64Data, fileName) {
     return await callAPI('uploadReceipt', { base64Data, fileName });
 }
+
 // ==========================================
 // دوال تتبع الزوار (محدثة لمنع التكرار والزيارات الوهمية)
 // ==========================================
@@ -292,9 +267,11 @@ function logVisitorActivity(pageName) {
     sessionStorage.setItem(cacheKey, 'true');
     callAPI('logVisit', { pageName: pageName, sessionId: sessionId }).catch(e => console.log(e));
 }
+
 async function fetchVisitorLogs() {
     return await callAPI('fetchVisitorLogs');
 }
+
 // ==========================================
 // 13. دوال لوحة المسوق الجديدة وسجل السحوبات
 // ==========================================
