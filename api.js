@@ -16,8 +16,13 @@ const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbx51syLRrRu0JrDhhg
 // ==========================================
 async function callAPI(action, data = {}) {
     try {
-        // جلب المفتاح السري من المتصفح (سيكون فارغاً للزوار)
-        const token = sessionStorage.getItem('authToken'); 
+        // 💡 تعديل الجوال: عزل التخزين لمنع انهيار الاتصال في متصفحات الهواتف
+        let token = null;
+        try {
+            token = sessionStorage.getItem('authToken'); 
+        } catch (storageErr) {
+            console.warn("تم تجاوز حظر التخزين في الجوال");
+        }
         
         const response = await fetch(API_BASE_URL, {
             method: 'POST',
