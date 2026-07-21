@@ -48,8 +48,14 @@ async function callAPI(action, data = {}) {
         } catch (e) {
             console.error('API Parse Error:', text);
             return { success: false, message: 'استجابة غير صالحة من السيرفر.' };
-        }  
-    } 
+        }
+        
+    // 👇 الجزء الذي كان ناقصاً في الكود الخاص بك
+    } catch (error) {
+        console.error('API Error:', error);
+        return { success: false, message: error.message || 'فشل الاتصال بالخادم' };
+    }
+}
 // ==========================================
 // 1. دوال المصادقة (هذه الدالة التي انحذفت بالخطأ)
 // ==========================================
