@@ -617,6 +617,7 @@ async function handleLoginSubmit(e) {
             sessionStorage.setItem('role', res.role);
             sessionStorage.setItem('code', res.marketerCode);
             sessionStorage.setItem('name', res.name);
+            sessionStorage.setItem('authToken', res.token);
             
             document.getElementById('main-content').style.display = 'none';
             document.getElementById('admin-content').style.display = 'block';
